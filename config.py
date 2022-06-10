@@ -1,0 +1,1 @@
+URI = "postgres://uqlpjsdbzyxsjq:d4bb192a90c1f1508e9322fe6c2bcaf57fde4729e82b05e2bbd12d801a377c3c@ec2-34-247-172-149.eu-west-1.compute.amazonaws.com:5432/d5pk53koo9cn8e"
