@@ -5,7 +5,10 @@ from loguru import logger
 class Table_data:
     arg = iter(args_all)
     time_arg = None
-    add_arg = []
+    add_arg = [
+        ["Date", "Project", "Tasks", "Time start", "Time end", "Duration", "Descreption", "Km", "Km cost", "Other",
+         "Total", "Price"],
+    ]
 
     def update(self):
         try:
@@ -51,27 +54,35 @@ class Table_data:
         return str(self.time_arg[10])
 
     def price(self):
-        return round(float(self.time_arg[11]),1)
+        return str(round(float(self.time_arg[11]), 1))
 
-    def creat_list(self):
+
+    def creat(self):
         if self.update():
-            self.add_arg += [self.date(),
-                             self.date(),
-                             self.tasks(),
-                             self.time_start(),
-                             self.time_end(),
-                             self.duration(),
-                             self.d_ex(),
-                             self.km(),
-                             self.km_cost(),
-                             self.o_ex(),
-                             self.ex(),
-                             self.price(),
-                             ]
-            self.creat_list()
+            self.add_arg.append([self.date(),
+                                 self.date(),
+                                 self.tasks(),
+                                 self.time_start(),
+                                 self.time_end(),
+                                 self.duration(),
+                                 self.d_ex(),
+                                 self.km(),
+                                 self.km_cost(),
+                                 self.o_ex(),
+                                 self.ex(),
+                                 self.price(),
+                                 ])
+            logger.info(f"Eteration\n" )
+            self.creat()
 
         else:
-            logger.info(f"Done {self.add_arg}")
-            return self.add_arg
+            logger.info(f"Done\n{self.add_arg}")
+            return(self.add_arg)
+
+    def out(self):
+        return self.add_arg
+
+
+
 
 
