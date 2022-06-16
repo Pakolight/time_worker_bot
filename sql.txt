@@ -43,6 +43,10 @@ CREATE TABLE IF NOT EXISTS timelist(id_name serial NOT NULL,
 				   PRIMARY KEY (id_name)
 				  );
 
+------удаляет строку -----
+--DELETE FROM timelist
+--where id_name = 1;
+
 ------вставляет значения -----
 --INSERT INTO timelist(time_start, time_end, km, other_ex) VALUES('13:00', '19:00', '33', '12');
 
