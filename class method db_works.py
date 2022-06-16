@@ -1,6 +1,5 @@
 from db_worck import args_all
 from loguru import logger
-import re
 
 
 class Table_data:
@@ -52,8 +51,7 @@ class Table_data:
         return str(self.time_arg[10])
 
     def price(self):
-
-        return str(self.time_arg[11])
+        return round(float(self.time_arg[11]),1)
 
     def creat_list(self):
         if self.update():
@@ -77,5 +75,3 @@ class Table_data:
             return self.add_arg
 
 
-test = Table_data()
-test.creat_list()
