@@ -1,4 +1,10 @@
 '''
+# Создает таблицу с id и именами пользователей
+CREATE TABLE IF NOT EXISTS list_user(user_id int NOT NULL,
+				   user_name text NOT NULL DEFAULT CURRENT_DATE,
+				   PRIMARY KEY (user_id)
+				   );
+
     #создает табличку
     cur.execute("""CREATE TABLE IF NOT EXISTS timelist(id_name serial NOT NULL,
                                                        date_st date NOT NULL DEFAULT CURRENT_DATE,
