@@ -14,12 +14,12 @@
 
 import telebot
 import re
+from loguru import logger
 from db_worck import SQL_worker
 from telebot.types import ReplyKeyboardMarkup as KB
 from telebot.types import KeyboardButton as RB
 
 bot = telebot.TeleBot('5300780935:AAGXX1j__hX2g3NA8WrMmUZtyuN1es1WcQM')
-sql = SQL_worker
 users_id = ["580359043"]
 
 class Arg:
@@ -27,7 +27,7 @@ class Arg:
     data_table = None
 
 
-@bot.message_handler(func=lambda msg: msg.text in {'Сancell'})
+#@bot.message_handler(func=lambda msg: msg.text in {'Сancell'})
 @bot.message_handler(commands=["start"])
 def admin(self):
     if self.from_user.id not in users_id:
@@ -58,10 +58,10 @@ def sing_up(self):
 
 #check email and input all date to list "data_table"
 def new_user_log(call):
-    bot.delete_message(call.chat.id, Arg.dell.id)
     email = call.text
     result = re.findall(r"([a-z0-9_-]+\.)*[a-z0-9_-]+@[a-z0-9_-]+(\.[a-z0-9_-]+)*\.[a-z]{2,6}", email)
     if len(result) != 0:
+        bot.delete_message(call.chat.id, Arg.dell.id)
         Arg.data_table += [email, call.from_user.id, call.from_user.first_name,]
         call = bot.send_message(call.chat.id, f'Email adres {call.text} was add\n Next enter yor pass in English')
         Arg.dell = call
@@ -88,34 +88,37 @@ def cost_hour(call):
 
 def cost_km(call):
     Arg.data_table += [call.text]
-    mail, user_pass, cost_hour, cost_km = Arg.data_table
+    #---------------
+    logger.debug(f"I caming\n{Arg.data_table}")
+    mail, id, user_name, user_pass, cost_hour, cost_km = Arg.data_table
     bot.delete_message(call.chat.id, Arg.dell.id)
 
     key = KB(resize_keyboard=True, row_width=1)
-    btn_1 = RB(text='Save it')
+    btn_1 = RB(text='Save')
     btn_2 = RB(text='Put in again')
     btn_3 = RB(text='Сancell')
     key.row(btn_1, btn_2)
     key.row(btn_3)
 
-    call = bot.send_message(call.chat.id, f'Please check the information, is it correct?'
-                                          f'Your email address: {mail}\n'
-                                          f'your password: {user_pass}\n'
-                                          f'The cost of 1 hour: {cost_hour}\n'
-                                          f'The cost of 1 km transport{cost_km}\n',
-                            reply_markup=key
+    call = bot.send_message(call.chat.id, f'Please check the information, is it correct?\n'
+                                          f'Your email address: *{mail}*\n'
+                                          f'your password: *{user_pass}*\n'
+                                          f'The cost of 1 hour: *{cost_hour}*\n'
+                                          f'The cost of 1 km transport: *{cost_km}*\n',
+                            reply_markup=key, parse_mode="Markdown"
                             )
     Arg.dell = call
-    bot.register_next_step_handler(call, cost_km)
 
-@bot.message_handler(func=lambda msg: msg.text == 'Save it')
+@bot.message_handler(func=lambda msg: msg.text == 'Save')
 def sing_in(self):
-    mail, user_pass, cost_hour, cost_km = Arg.data_table
-    add = sql(mail, user_pass, cost_hour, cost_km)
-    add.enter_start_data()
+    mail, id, user_name, user_pass, cost_hour, cost_km = Arg.data_table
+    logger.debug(f"Repack done{mail, id, user_name, user_pass, cost_hour, cost_km}", )
+    sql = SQL_worker(mail, id, user_name, user_pass, cost_hour, cost_km)
+    logger.debug(f"Repack done{mail, id, user_name, user_pass, cost_hour, cost_km}", )
+    sql.enter_start_data()
     bot.send_message(self.chat.id, 'Done IN')
 
-# Вариант с функцией и с импортом re
+
 
 @bot.message_handler(func=lambda msg: msg.text == 'Sing IN')
 def sing_in(self):

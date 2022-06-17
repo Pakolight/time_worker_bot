@@ -1,7 +1,8 @@
 import psycopg2
 from loguru import logger
 from config import URI
-
+connection = psycopg2.connect(URI, sslmode="require")
+connection.autocommit = True
 
 class SQL_worker():
 
@@ -16,12 +17,13 @@ class SQL_worker():
     # Создает таблицу по с названием почты, заносит данные юзера в таблицу
     def enter_start_data(self):
         connection = psycopg2.connect(URI, sslmode="require")
-        connection.autocommit = True
+        #connection.autocommit = True
 
         try:
             with connection.cursor() as cur:
+                logger.debug(f"i'am in SQL{self.em}")
                 # создает табличку пользователя
-                cur.execute(f"""CREATE TABLE IF NOT EXISTS {self.em}(id_name serial NOT NULL,
+                cur.execute("""CREATE TABLE IF NOT EXISTS {0}(id_name serial NOT NULL,
                                                                        date_st date NOT NULL DEFAULT CURRENT_DATE,
                                                                        project text NOT NULL DEFAULT CURRENT_DATE,
                                                                        tasks text,
@@ -31,11 +33,13 @@ class SQL_worker():
                                                                        ex numeric DEFAULT 0,
                                                                        time_start time NOT NULL,
                                                                        time_end time,
-                                                                       costs numeric NOT NULL DEFAULT {self.cost},
+                                                                       costs numeric NOT NULL DEFAULT {1},
                                                                        arg_time numeric NOT NULL DEFAULT 3600,
-                                                                       arg_km numeric NOT NULL DEFAULT {self.km},
+                                                                       arg_km numeric NOT NULL DEFAULT {2},
                                                                        PRIMARY KEY (id_name) );"""
+                            .format(f"{self.em}", f"{self.cost}", f"{self.km}")
                             )
+                connection.commit()
         except:
             cur.close()
             connection.close()
@@ -44,7 +48,9 @@ class SQL_worker():
         try:
             with connection.cursor() as cur:
                 # put ito data from telegramm user (id and first name)
-                cur.execute(f"""INSERT INTO list_user(user_id, user_name) VALUES('{self.id}', '{self.user}',)""")
+                cur.execute("""INSERT INTO list_user(user_id, user_name) VALUES('{0}', '{1}',)"""
+                            .format(f"{self.id}", f"{self.user}"))
+                connection.commit()
 
         except:
             cur.close()
