@@ -17,45 +17,40 @@ class SQL_worker():
     # Создает таблицу по с названием почты, заносит данные юзера в таблицу
     def enter_start_data(self):
         connection = psycopg2.connect(URI, sslmode="require")
-        #connection.autocommit = True
+        connection.autocommit = True
 
-        try:
-            with connection.cursor() as cur:
+
+        with connection.cursor() as cur:
                 logger.debug(f"i'am in SQL{self.em}")
                 # создает табличку пользователя
                 cur.execute("""CREATE TABLE IF NOT EXISTS {0}(id_name serial NOT NULL,
-                                                                       date_st date NOT NULL DEFAULT CURRENT_DATE,
-                                                                       project text NOT NULL DEFAULT CURRENT_DATE,
-                                                                       tasks text,
-                                                                       desc_ex text,
-                                                                       other_ex numeric DEFAULT 0,
-                                                                       km numeric DEFAULT 0,
-                                                                       ex numeric DEFAULT 0,
-                                                                       time_start time NOT NULL,
-                                                                       time_end time,
-                                                                       costs numeric NOT NULL DEFAULT {1},
-                                                                       arg_time numeric NOT NULL DEFAULT 3600,
-                                                                       arg_km numeric NOT NULL DEFAULT {2},
-                                                                       PRIMARY KEY (id_name) );"""
-                            .format(f"{self.em}", f"{self.cost}", f"{self.km}")
+                                                                                       date_st date NOT NULL DEFAULT CURRENT_DATE,
+                                                                                       project text NOT NULL DEFAULT CURRENT_DATE,
+                                                                                       tasks text,
+                                                                                       desc_ex text,
+                                                                                       other_ex numeric DEFAULT 0,
+                                                                                       km numeric DEFAULT 0,
+                                                                                       ex numeric DEFAULT 0,
+                                                                                       time_start time NOT NULL,
+                                                                                       time_end time,
+                                                                                       costs numeric NOT NULL DEFAULT {1},
+                                                                                       arg_time numeric NOT NULL DEFAULT 3600,
+                                                                                       arg_km numeric NOT NULL DEFAULT {2},
+                                                                                       PRIMARY KEY (id_name) );"""
+                            .format(f"{str(self.user) + '_' + str(self.id)}", f"{str(self.cost)}", f"{str(self.km)}")
                             )
-                connection.commit()
-        except:
-            cur.close()
-            connection.close()
-            logger.debug("close")
+                logger.info("after create table")
 
         try:
             with connection.cursor() as cur:
                 # put ito data from telegramm user (id and first name)
-                cur.execute("""INSERT INTO list_user(user_id, user_name) VALUES('{0}', '{1}',)"""
-                            .format(f"{self.id}", f"{self.user}"))
-                connection.commit()
+                cur.execute("""INSERT INTO list_user(user_id, user_name, pass_user) VALUES('{0}', '{1}', '{2}')"""
+                            .format(f"{str(self.id)}", f"{str(self.user)}", f'{str(self.pss)}'))
 
         except:
             cur.close()
             connection.close()
-            logger.debug("close")
+
 
 '''
 try:
