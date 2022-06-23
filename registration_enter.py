@@ -73,11 +73,24 @@ def new_user_log(call):
         bot.register_next_step_handler(call, new_user_log)
 
 def new_user_pass(call):
-    Arg.data_table += [call.text]
-    bot.delete_message(call.chat.id, Arg.dell.id)
-    call = bot.send_message(call.chat.id, 'enter the cost of 1 hour of your work in the format 20.5')
-    Arg.dell = call
-    bot.register_next_step_handler(call, cost_hour)
+    pass_user = call.text
+    result = re.findall(r"[a-z]|[A-Z]|[1-9]", pass_user)
+    if len(result) != 0:
+        Arg.data_table += [call.text]
+        bot.delete_message(call.chat.id, Arg.dell.id)
+        call = bot.send_message(call.chat.id, 'enter the cost of 1 hour of your work in the format 20.5')
+        Arg.dell = call
+        bot.register_next_step_handler(call, cost_hour)
+
+    else:
+        bot.delete_message(call.chat.id, Arg.dell.id)
+        call = bot.send_message(call.chat.id, 'Input type doesn\'t match format please try enter password:\n'
+                                              'Uppercase letters: A-Z\n'
+                                              'Lowercase letters: a-z\n'
+                                              'Numbers: 0-9\n'
+                                              'Any of the special characters: @# $% ^ & + =\n')
+        Arg.dell = call
+        bot.register_next_step_handler(call, new_user_pass)
 
 def cost_hour(call):
     Arg.data_table += [call.text]
