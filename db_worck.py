@@ -21,7 +21,6 @@ class SQL_worker():
 
 
         with connection.cursor() as cur:
-                logger.debug(f"i'am in SQL{self.em}")
                 # создает табличку пользователя
                 cur.execute("""CREATE TABLE IF NOT EXISTS {0}(id_name serial NOT NULL,
                                                                                        date_st date NOT NULL DEFAULT CURRENT_DATE,
@@ -39,7 +38,6 @@ class SQL_worker():
                                                                                        PRIMARY KEY (id_name) );"""
                             .format(f"{str(self.user) + '_' + str(self.id)}", f"{str(self.cost)}", f"{str(self.km)}")
                             )
-                logger.info("after create table")
 
         try:
             with connection.cursor() as cur:
@@ -50,9 +48,37 @@ class SQL_worker():
         except:
             cur.close()
             connection.close()
+#проверяет есть ли id пользователя в бд
+class Getdate():
+    def __init__(self, user_id):
+        self.id = user_id
+
+
+    def check_account(self):
+        try:
+            with connection.cursor() as cur:
+                cur.execute("""SELECT user_id FROM list_user WHERE user_id = {0};"""
+                            .format(f"{str(self.id)}"))
+
+                return int(self.id) in cur.fetchone()
+        except:
+            return False
+
+        finally:
+            connection.close()
+
+
+
+
+
+
+
+
+
 
 
 '''
+
 try:
     with connection.cursor() as cur:
 

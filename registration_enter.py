@@ -16,11 +16,12 @@ import telebot
 import re
 from loguru import logger
 from db_worck import SQL_worker
+from db_worck import Getdate
 from telebot.types import ReplyKeyboardMarkup as KB
 from telebot.types import KeyboardButton as RB
 
 bot = telebot.TeleBot('5300780935:AAGXX1j__hX2g3NA8WrMmUZtyuN1es1WcQM')
-users_id = ["580359043"]
+
 
 class Arg:
     dell = None
@@ -30,7 +31,8 @@ class Arg:
 #@bot.message_handler(func=lambda msg: msg.text in {'Сancell'})
 @bot.message_handler(commands=["start"])
 def admin(self):
-    if self.from_user.id not in users_id:
+    #self.from_user.id
+    if Getdate.check_account(self.from_user.id):
         key = KB(resize_keyboard=True, row_width=1)
         btn_1 = RB(text='Sing IN')
         btn_2 = RB(text='Sing UP')
@@ -44,8 +46,14 @@ def admin(self):
                          )
 
     else:
+        key2 = KB(resize_keyboard=True, row_width=1)
+        btn_1 = RB(text='Sing IN to another account')
+        btn_2 = RB(text='Go to my account')
+        btn_3 = RB(text='FAQ')
+        key2.row(btn_1, btn_2)
+        key2.row(btn_3)
         Arg.dell = bot.send_message(self.chat.id, f'Hello {self.from_user.first_name}! '
-                                       f'Good to see you again!')
+                                       f'Good to see you again!', reply_markup=key2)
 
 
 @bot.message_handler(func=lambda msg: msg.text in {'Sing UP', 'Put in again'})
@@ -101,8 +109,6 @@ def cost_hour(call):
 
 def cost_km(call):
     Arg.data_table += [call.text]
-    #---------------
-    logger.debug(f"I caming\n{Arg.data_table}")
     mail, id, user_name, user_pass, cost_hour, cost_km = Arg.data_table
     bot.delete_message(call.chat.id, Arg.dell.id)
 
@@ -127,7 +133,6 @@ def sing_in(self):
     mail, id, user_name, user_pass, cost_hour, cost_km = Arg.data_table
     logger.debug(f"Repack done{mail, id, user_name, user_pass, cost_hour, cost_km}", )
     sql = SQL_worker(mail, id, user_name, user_pass, cost_hour, cost_km)
-    logger.debug(f"Repack done{mail, id, user_name, user_pass, cost_hour, cost_km}", )
     sql.enter_start_data()
     bot.send_message(self.chat.id, 'Done IN')
 
