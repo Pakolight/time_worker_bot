@@ -30,8 +30,8 @@ class SQL_worker():
                                                                                        other_ex numeric DEFAULT 0,
                                                                                        km numeric DEFAULT 0,
                                                                                        ex numeric DEFAULT 0,
-                                                                                       time_start time NOT NULL,
-                                                                                       time_end time,
+                                                                                       time_start timestamptz NOT NULL,
+                                                                                       time_end timestamptz,
                                                                                        costs numeric NOT NULL DEFAULT {1},
                                                                                        arg_time numeric NOT NULL DEFAULT 3600,
                                                                                        arg_km numeric NOT NULL DEFAULT {2},
@@ -50,11 +50,15 @@ class SQL_worker():
             connection.close()
 #проверяет есть ли id пользователя в бд
 class Getdate():
+
+
     def __init__(self, user_id):
         self.id = user_id
 
 
     def check_account(self):
+        connection = psycopg2.connect(URI, sslmode="require")
+
         try:
             with connection.cursor() as cur:
                 cur.execute("""SELECT user_id FROM list_user WHERE user_id = {0};"""
@@ -67,7 +71,56 @@ class Getdate():
         finally:
             connection.close()
 
+#Проверяет запущен ли рабочий день
+    def check_start_time(self):
+        connection = psycopg2.connect(URI, sslmode="require")
 
+        try:
+            with connection.cursor() as cur:
+                cur.execute("""SELECT user_id FROM {0} WHERE user_id = {1};"""
+                            .format(f"{'daytime_user' + '_' + str(self.id)}", f"{str(self.id)}"))
+
+                return int(self.id) in cur.fetchone()
+        except:
+            return False
+
+        finally:
+            connection.close()
+
+
+
+
+            #Cоздает таблицу отсчета времени рабочего дня, прои создании заносит начало рабочего дня
+    def create_time_table(self):
+        connection = psycopg2.connect(URI, sslmode="require")
+
+        with connection.cursor() as cur:
+
+            try:
+                cur.execute("""CREATE TABLE IF NOT EXISTS {0} (id_name serial NOT NULL,
+                                                                           date_time_st timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                                                           date_time_end timestamptz,
+                                                                           project text,
+                                                                           location text,
+                                                                           PRIMARY KEY (id_name) );"""
+                                .format(f"{'daytime_user' + '_' + str(self.id)}"))
+
+
+
+                cur.execute("""INSERT INTO {0} (id_name) VALUES({1}) ;"""
+                                .format(f"{'daytime_user' + '_' + str(self.id)}", f"{self.id}", ))
+            except:
+
+                connection.close()
+
+
+
+
+
+
+
+#test = Getdate("580359043")
+#test.create_time_table()
 
 
 

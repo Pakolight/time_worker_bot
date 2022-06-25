@@ -155,16 +155,43 @@ def test(self):
 
 @bot.message_handler(func=lambda msg: msg.text == 'Working day')
 def test(self):
+    if Getdate.create_time_table(self.from_user.id):
+        bot.delete_message(self.chat.id, Arg.dell.id)
+        key = KB(resize_keyboard=True, row_width=1)
+        btn_1 = RB(text='Start the day')
+        btn_2 = RB(text='End the day')
+        btn_3 = RB(text='Back')
+        key.row(btn_1, btn_2)
+        key.row(btn_3)
+        Arg.dell = bot.send_message(self.chat.id, f'I\'m ready to time your working day! '
+                                                  f'Just press "Start the day" at the beginning of the day, '
+                                                  f'and "End the day" at the end of the day. ', reply_markup=key
+                                )
+    else:
+        bot.delete_message(self.chat.id, Arg.dell.id)
+
+        key = KB(resize_keyboard=True, row_width=1)
+        btn_2 = RB(text='End the day')
+        btn_3 = RB(text='Back')
+        key.row(btn_2)
+        key.row(btn_3)
+        Arg.dell = bot.send_message(self.chat.id, f'If you\'ve finished your work day - let me know', reply_markup=key
+                                    )
+
+
+@bot.message_handler(func=lambda msg: msg.text == 'Start the day')
+def test(self):
+    data = Getdate(self.from_user.id)
+    data.create_time_table()
+
     bot.delete_message(self.chat.id, Arg.dell.id)
+
     key = KB(resize_keyboard=True, row_width=1)
-    btn_1 = RB(text='Start the day')
     btn_2 = RB(text='End the day')
     btn_3 = RB(text='Back')
-    key.row(btn_1, btn_2)
+    key.row(btn_2)
     key.row(btn_3)
-    Arg.dell = bot.send_message(self.chat.id, f'I\'m ready to time your working day! '
-                                              f'Just press "Start the day" at the beginning of the day, '
-                                              f'and "End the day" at the end of the day. ', reply_markup=key
+    Arg.dell = bot.send_message(self.chat.id, f'If you\'ve finished your work day - let me know', reply_markup=key
                                 )
 
 
