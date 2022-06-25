@@ -43,12 +43,12 @@ def admin(self):
                                        f'This bot will help you calculate your working hours, '
                                        f'wages and generate a report in a table. '
                                        f'You can register\Sing Up or Sing In to your account', reply_markup=key
-                         )
+                                    )
 
     else:
         key2 = KB(resize_keyboard=True, row_width=1)
-        btn_1 = RB(text='Sing IN to another account')
-        btn_2 = RB(text='Go to my account')
+        btn_1 = RB(text='Go to my account')
+        btn_2 = RB(text='Sing IN to another account')
         btn_3 = RB(text='FAQ')
         key2.row(btn_1, btn_2)
         key2.row(btn_3)
@@ -130,6 +130,7 @@ def cost_km(call):
 
 @bot.message_handler(func=lambda msg: msg.text == 'Save')
 def sing_in(self):
+    bot.delete_message(self.chat.id, Arg.dell.id)
     mail, id, user_name, user_pass, cost_hour, cost_km = Arg.data_table
     logger.debug(f"Repack done{mail, id, user_name, user_pass, cost_hour, cost_km}", )
     sql = SQL_worker(mail, id, user_name, user_pass, cost_hour, cost_km)
@@ -138,9 +139,34 @@ def sing_in(self):
 
 
 
-@bot.message_handler(func=lambda msg: msg.text == 'Sing IN')
-def sing_in(self):
-    bot.send_message(self.chat.id, 'Done IN')
+#попадаем в меню пользователя
+@bot.message_handler(func=lambda msg: msg.text in {'Go to my account', 'Sing IN', "Back"})
+def test(self):
+    bot.delete_message(self.chat.id, Arg.dell.id)
+    key = KB(resize_keyboard=True, row_width=1)
+    btn_1 = RB(text='Working day')
+    btn_2 = RB(text='Edit data')
+    btn_3 = RB(text='Output table')
+    key.row(btn_1, btn_2)
+    key.row(btn_3)
+    Arg.dell = bot.send_message(self.chat.id, f'So  {self.from_user.first_name}! '
+                                              f'Going to start. ', reply_markup=key
+                                )
+
+@bot.message_handler(func=lambda msg: msg.text == 'Working day')
+def test(self):
+    bot.delete_message(self.chat.id, Arg.dell.id)
+    key = KB(resize_keyboard=True, row_width=1)
+    btn_1 = RB(text='Start the day')
+    btn_2 = RB(text='End the day')
+    btn_3 = RB(text='Back')
+    key.row(btn_1, btn_2)
+    key.row(btn_3)
+    Arg.dell = bot.send_message(self.chat.id, f'I\'m ready to time your working day! '
+                                              f'Just press "Start the day" at the beginning of the day, '
+                                              f'and "End the day" at the end of the day. ', reply_markup=key
+                                )
+
 
 
 
