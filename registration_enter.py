@@ -28,10 +28,10 @@ class Arg:
     data_table = None
 
 
-#@bot.message_handler(func=lambda msg: msg.text in {'Сancell'})
+# @bot.message_handler(func=lambda msg: msg.text in {'Сancell'})
 @bot.message_handler(commands=["start"])
 def admin(self):
-    #self.from_user.id
+    # self.from_user.id
     if Getdate.check_account(self.from_user.id):
         key = KB(resize_keyboard=True, row_width=1)
         btn_1 = RB(text='Sing IN')
@@ -40,9 +40,10 @@ def admin(self):
         key.row(btn_1, btn_2)
         key.row(btn_3)
         Arg.dell = bot.send_message(self.chat.id, f'Hello {self.from_user.first_name}! '
-                                       f'This bot will help you calculate your working hours, '
-                                       f'wages and generate a report in a table. '
-                                       f'You can register\Sing Up or Sing In to your account', reply_markup=key
+                                                  f'This bot will help you calculate your working hours, '
+                                                  f'wages and generate a report in a table. '
+                                                  f'You can register\Sing Up or Sing In to your account',
+                                    reply_markup=key
                                     )
 
     else:
@@ -53,24 +54,25 @@ def admin(self):
         key2.row(btn_1, btn_2)
         key2.row(btn_3)
         Arg.dell = bot.send_message(self.chat.id, f'Hello {self.from_user.first_name}! '
-                                       f'Good to see you again!', reply_markup=key2)
+                                                  f'Good to see you again!', reply_markup=key2)
 
 
 @bot.message_handler(func=lambda msg: msg.text in {'Sing UP', 'Put in again'})
 def sing_up(self):
     Arg.data_table = []
     bot.delete_message(self.chat.id, Arg.dell.id)
-    call = bot.send_message(self.chat.id, 'Enter your email address',)
+    call = bot.send_message(self.chat.id, 'Enter your email address', )
     bot.register_next_step_handler(call, new_user_log)
     Arg.dell = call
 
-#check email and input all date to list "data_table"
+
+# check email and input all date to list "data_table"
 def new_user_log(call):
     email = call.text
     result = re.findall(r"([a-z0-9_-]+\.)*[a-z0-9_-]+@[a-z0-9_-]+(\.[a-z0-9_-]+)*\.[a-z]{2,6}", email)
     if len(result) != 0:
         bot.delete_message(call.chat.id, Arg.dell.id)
-        Arg.data_table += [email, call.from_user.id, call.from_user.first_name,]
+        Arg.data_table += [email, call.from_user.id, call.from_user.first_name, ]
         call = bot.send_message(call.chat.id, f'Email adres {call.text} was add\n Next enter yor pass in English')
         Arg.dell = call
         bot.register_next_step_handler(call, new_user_pass)
@@ -79,6 +81,7 @@ def new_user_log(call):
         call = bot.send_message(call.chat.id, 'Input type doesn\'t match format example.address@gmail.com')
         Arg.dell = call
         bot.register_next_step_handler(call, new_user_log)
+
 
 def new_user_pass(call):
     pass_user = call.text
@@ -100,12 +103,14 @@ def new_user_pass(call):
         Arg.dell = call
         bot.register_next_step_handler(call, new_user_pass)
 
+
 def cost_hour(call):
     Arg.data_table += [call.text]
     bot.delete_message(call.chat.id, Arg.dell.id)
     call = bot.send_message(call.chat.id, 'enter the cost of 1 km transport in the format 19.5')
     Arg.dell = call
     bot.register_next_step_handler(call, cost_km)
+
 
 def cost_km(call):
     Arg.data_table += [call.text]
@@ -128,6 +133,7 @@ def cost_km(call):
                             )
     Arg.dell = call
 
+
 @bot.message_handler(func=lambda msg: msg.text == 'Save')
 def sing_in(self):
     bot.delete_message(self.chat.id, Arg.dell.id)
@@ -138,8 +144,7 @@ def sing_in(self):
     bot.send_message(self.chat.id, 'Done IN')
 
 
-
-#попадаем в меню пользователя
+# попадаем в меню пользователя
 @bot.message_handler(func=lambda msg: msg.text in {'Go to my account', 'Sing IN', "Back"})
 def test(self):
     bot.delete_message(self.chat.id, Arg.dell.id)
@@ -153,21 +158,11 @@ def test(self):
                                               f'Going to start. ', reply_markup=key
                                 )
 
+
 @bot.message_handler(func=lambda msg: msg.text == 'Working day')
 def test(self):
-    if Getdate.create_time_table(self.from_user.id):
-        bot.delete_message(self.chat.id, Arg.dell.id)
-        key = KB(resize_keyboard=True, row_width=1)
-        btn_1 = RB(text='Start the day')
-        btn_2 = RB(text='End the day')
-        btn_3 = RB(text='Back')
-        key.row(btn_1, btn_2)
-        key.row(btn_3)
-        Arg.dell = bot.send_message(self.chat.id, f'I\'m ready to time your working day! '
-                                                  f'Just press "Start the day" at the beginning of the day, '
-                                                  f'and "End the day" at the end of the day. ', reply_markup=key
-                                )
-    else:
+    check = Getdate(self.from_user.id)
+    if check.check_start_day():
         bot.delete_message(self.chat.id, Arg.dell.id)
 
         key = KB(resize_keyboard=True, row_width=1)
@@ -177,6 +172,18 @@ def test(self):
         key.row(btn_3)
         Arg.dell = bot.send_message(self.chat.id, f'If you\'ve finished your work day - let me know', reply_markup=key
                                     )
+    else:
+        key = KB(resize_keyboard=True, row_width=1)
+        btn_1 = RB(text='Start the day')
+        btn_3 = RB(text='Back')
+        key.row(btn_1)
+        key.row(btn_3)
+        Arg.dell = bot.send_message(self.chat.id, f'I\'m ready to time your working day! '
+                                                  f'Just press "Start the day" at the beginning of the day, '
+                                                  f'and "End the day" at the end of the day. ', reply_markup=key
+                                    )
+
+
 
 
 @bot.message_handler(func=lambda msg: msg.text == 'Start the day')
@@ -195,7 +202,11 @@ def test(self):
                                 )
 
 
-
+@bot.message_handler(func=lambda msg: msg.text == 'End the day')
+def end_day(self):
+    data = Getdate(self.from_user.id)
+    data.end_day()
+    bot.send_message(self.chat.id, 'I am stop it')
 
 
 bot.polling()

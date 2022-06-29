@@ -71,23 +71,23 @@ class Getdate():
         finally:
             connection.close()
 
-#Проверяет запущен ли рабочий день
-    def check_start_time(self):
+#Проверяет запущен ли рабочий день, создана ли таблица
+
+
+    def check_start_day(self):
         connection = psycopg2.connect(URI, sslmode="require")
 
         try:
             with connection.cursor() as cur:
-                cur.execute("""SELECT user_id FROM {0} WHERE user_id = {1};"""
-                            .format(f"{'daytime_user' + '_' + str(self.id)}", f"{str(self.id)}"))
+                    cur.execute("""SELECT date_time_st FROM {0};"""
+                            .format(f"{'daytime_user' + '_' + str(self.id)}",))
+            return cur.fetchone
 
-                return int(self.id) in cur.fetchone()
         except:
             return False
 
         finally:
             connection.close()
-
-
 
 
             #Cоздает таблицу отсчета времени рабочего дня, прои создании заносит начало рабочего дня
@@ -105,13 +105,27 @@ class Getdate():
                                                                            PRIMARY KEY (id_name) );"""
                                 .format(f"{'daytime_user' + '_' + str(self.id)}"))
 
-
-
+                connection.commit()
                 cur.execute("""INSERT INTO {0} (id_name) VALUES({1}) ;"""
                                 .format(f"{'daytime_user' + '_' + str(self.id)}", f"{self.id}", ))
+                connection.commit()
             except:
 
                 connection.close()
+
+    def end_day(self):
+        connection = psycopg2.connect(URI, sslmode="require")
+
+        try:
+            with connection.cursor() as cur:
+                cur.execute(""" UPDATE {0} SET date_time_end = CURRENT_TIMESTAMP;"""
+                            .format(f"{'daytime_user' + '_' + str(self.id)}", ))
+                logger.info("Добавид время оканчания")
+                connection.commit()
+
+        except:
+            connection.close()
+
 
 
 
