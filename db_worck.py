@@ -48,6 +48,24 @@ class SQL_worker():
         except:
             cur.close()
             connection.close()
+
+    def enter_time(self):
+        try:
+            with connection.cursor() as cur:
+                cur.execute(""" INSERT INTO {0}(time_start, time_end)
+                                SELECT date_time_st, date_time_end
+                                FROM {1}
+                                WHERE id_name = {2};"""
+                            .format(f'{str(self.user) + "_" + str(self.id)}',
+                                    f"{'daytime_user' + '_' + str(self.id)}",
+                                    f'{str(self.id)}'))
+
+                logger.info("Добавил время в основную таблицу, создал в ней строку")
+                connection.commit()
+
+        except:
+            connection.close()
+
 #проверяет есть ли id пользователя в бд
 class Getdate():
 
@@ -64,7 +82,7 @@ class Getdate():
                 cur.execute("""SELECT user_id FROM list_user WHERE user_id = {0};"""
                             .format(f"{str(self.id)}"))
 
-                return int(self.id) in cur.fetchone()
+                return cur.fetchone()
         except:
             return False
 
@@ -90,7 +108,7 @@ class Getdate():
             connection.close()
 
 
-            #Cоздает таблицу отсчета времени рабочего дня, прои создании заносит начало рабочего дня
+#Cоздает таблицу отсчета времени рабочего дня, прои создании заносит начало рабочего дня
     def create_time_table(self):
         connection = psycopg2.connect(URI, sslmode="require")
 
@@ -114,6 +132,7 @@ class Getdate():
                 connection.close()
 
     def end_day(self):
+
         connection = psycopg2.connect(URI, sslmode="require")
 
         try:
@@ -125,6 +144,82 @@ class Getdate():
 
         except:
             connection.close()
+
+#Вставляет данные с временной таблицы времени, в табл проектов и удаляет временную таблицу.
+class Insert():
+    def __init__(self, user_id, user_name,):
+        self.id = user_id
+        self.user = user_name
+
+    def enter_data(self):
+        connection = psycopg2.connect(URI, sslmode="require")
+
+        try:
+            with connection.cursor() as cur:
+                cur.execute(""" INSERT INTO {0} (time_start, time_end)
+                                SELECT date_time_st, date_time_end
+                                FROM {1}
+                                ;"""
+                            .format(f"{str(self.user) + '_' + str(self.id)}",
+                                    f"{'daytime_user' + '_' + str(self.id)}",
+                                    ))
+
+                logger.info("Добавид в основную табл данные с временной")
+                connection.commit()
+
+        except:
+                connection.close()
+
+        connection = psycopg2.connect(URI, sslmode="require")
+
+        try:
+            with connection.cursor() as cur:
+                cur.execute(""" DROP TABLE {0};"""
+                            .format(f"{'daytime_user' + '_' + str(self.id)}", ))
+                connection.commit()
+
+        except:
+            connection.close()
+
+class Details():
+
+    def __init__(self, user, id, project_name, tasks, expenses):
+        self.user = user
+        self.id = id
+        self.project_name = project_name
+        self.tasks = tasks
+        self.expenses = expenses
+#Определяет последний проект по id чекает самый большой
+    def lust_project(self):
+        connection = psycopg2.connect(URI, sslmode="require")
+
+        with connection.cursor() as cur:
+            cur.execute(""" SELECT id_name FROM {0};""".format(f"{str(self.user) + '_' + str(self.id)}",))
+
+            arg = cur.fetchall()
+            return max(arg[0])
+
+    def insert_details(self):
+        connection = psycopg2.connect(URI, sslmode="require")
+        id_project = self.lust_project()
+        try:
+            with connection.cursor() as cur:
+                cur.execute(""" UPDATE {0}
+                                SET project='{1}', tasks='{2}', other_ex={3}
+                                WHERE id_name={4};"""
+                            .format(f"{str(self.user) + '_' + str(self.id)}",
+                                    f"{self.project_name}",
+                                    f"{self.tasks}",
+                                    f"{self.expenses}",
+                                    f"{int(id_project)}"))
+                connection.commit()
+        except:
+            connection.close()
+
+
+
+
+
 
 
 

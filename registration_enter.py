@@ -17,6 +17,8 @@ import re
 from loguru import logger
 from db_worck import SQL_worker
 from db_worck import Getdate
+from db_worck import Insert
+from db_worck import Details
 from telebot.types import ReplyKeyboardMarkup as KB
 from telebot.types import KeyboardButton as RB
 
@@ -28,11 +30,23 @@ class Arg:
     data_table = None
 
 
-# @bot.message_handler(func=lambda msg: msg.text in {'Сancell'})
+@bot.message_handler(func=lambda msg: msg.text in {'Сancell', 'Next time'})
 @bot.message_handler(commands=["start"])
 def admin(self):
     # self.from_user.id
-    if Getdate.check_account(self.from_user.id):
+    user = Getdate(self.from_user.id)
+
+    if user.check_account():
+        key2 = KB(resize_keyboard=True, row_width=1)
+        btn_1 = RB(text='Go to my account')
+        btn_2 = RB(text='Sing IN to another account')
+        btn_3 = RB(text='FAQ')
+        key2.row(btn_1, btn_2)
+        key2.row(btn_3)
+        Arg.dell = bot.send_message(self.chat.id, f'Hello {self.from_user.first_name}! '
+                                                  f'Good to see you again!', reply_markup=key2)
+
+    else:
         key = KB(resize_keyboard=True, row_width=1)
         btn_1 = RB(text='Sing IN')
         btn_2 = RB(text='Sing UP')
@@ -45,16 +59,6 @@ def admin(self):
                                                   f'You can register\Sing Up or Sing In to your account',
                                     reply_markup=key
                                     )
-
-    else:
-        key2 = KB(resize_keyboard=True, row_width=1)
-        btn_1 = RB(text='Go to my account')
-        btn_2 = RB(text='Sing IN to another account')
-        btn_3 = RB(text='FAQ')
-        key2.row(btn_1, btn_2)
-        key2.row(btn_3)
-        Arg.dell = bot.send_message(self.chat.id, f'Hello {self.from_user.first_name}! '
-                                                  f'Good to see you again!', reply_markup=key2)
 
 
 @bot.message_handler(func=lambda msg: msg.text in {'Sing UP', 'Put in again'})
@@ -115,6 +119,7 @@ def cost_hour(call):
 def cost_km(call):
     Arg.data_table += [call.text]
     mail, id, user_name, user_pass, cost_hour, cost_km = Arg.data_table
+
     bot.delete_message(call.chat.id, Arg.dell.id)
 
     key = KB(resize_keyboard=True, row_width=1)
@@ -136,16 +141,19 @@ def cost_km(call):
 
 @bot.message_handler(func=lambda msg: msg.text == 'Save')
 def sing_in(self):
+    key = KB(resize_keyboard=True, row_width=1)
+    btn_1 = RB(text='Go to work')
+    key.row(btn_1, )
     bot.delete_message(self.chat.id, Arg.dell.id)
     mail, id, user_name, user_pass, cost_hour, cost_km = Arg.data_table
     logger.debug(f"Repack done{mail, id, user_name, user_pass, cost_hour, cost_km}", )
     sql = SQL_worker(mail, id, user_name, user_pass, cost_hour, cost_km)
     sql.enter_start_data()
-    bot.send_message(self.chat.id, 'Done IN')
+    Arg.dell = bot.send_message(self.chat.id, 'Done IN', reply_markup=key)
 
 
 # попадаем в меню пользователя
-@bot.message_handler(func=lambda msg: msg.text in {'Go to my account', 'Sing IN', "Back"})
+@bot.message_handler(func=lambda msg: msg.text in {'Go to my account', "Back", "Go to work"})
 def test(self):
     bot.delete_message(self.chat.id, Arg.dell.id)
     key = KB(resize_keyboard=True, row_width=1)
@@ -184,8 +192,6 @@ def test(self):
                                     )
 
 
-
-
 @bot.message_handler(func=lambda msg: msg.text == 'Start the day')
 def test(self):
     data = Getdate(self.from_user.id)
@@ -204,9 +210,86 @@ def test(self):
 
 @bot.message_handler(func=lambda msg: msg.text == 'End the day')
 def end_day(self):
+    key = KB(resize_keyboard=True, row_width=1)
+    btn_2 = RB(text='Enter details')
+    btn_3 = RB(text='Next time')
+    key.row(btn_2)
+    key.row(btn_3)
+
+    bot.delete_message(self.chat.id, Arg.dell.id)
+
     data = Getdate(self.from_user.id)
     data.end_day()
-    bot.send_message(self.chat.id, 'I am stop it')
+    data2 = Insert(self.from_user.id, self.from_user.first_name)
+    data2.enter_data()
+    Arg.dell = bot.send_message(self.chat.id, 'Okay, the workday is over!\n'
+                                              'Culd you want to enter project details?',
+                                reply_markup=key)
+
+
+# Принемает данные проекта, заносит их во временную переменную
+@bot.message_handler(func=lambda msg: msg.text in {'Enter details', 'Enter again'})
+def details(self):
+    bot.delete_message(self.chat.id, Arg.dell.id)
+
+    call = bot.send_message(self.chat.id, "Enter project name")
+    bot.register_next_step_handler(call, project_name)
+
+    Arg.dell = call
+
+
+def project_name(call):
+    Arg.data_table = [call.from_user.id]
+    Arg.data_table += [call.text]
+
+    bot.delete_message(call.chat.id, Arg.dell.id)
+
+    call = bot.send_message(call.chat.id, "Enter your tasks")
+    bot.register_next_step_handler(call, tasks)
+
+    Arg.dell = call
+
+
+def tasks(call):
+    Arg.data_table += [call.text]
+
+    bot.delete_message(call.chat.id, Arg.dell.id)
+
+    call = bot.send_message(call.chat.id, "Enter your expenses")
+    bot.register_next_step_handler(call, expenses)
+
+    Arg.dell = call
+
+
+def expenses(call):
+    Arg.data_table += [call.text]
+    id, project_name, tasks, expenses = Arg.data_table
+
+    bot.delete_message(call.chat.id, Arg.dell.id)
+
+    key = KB(resize_keyboard=True, row_width=1)
+    btn_1 = RB(text='Save it')
+    btn_2 = RB(text='Enter again')
+    btn_3 = RB(text='Сancell')
+    key.row(btn_1, btn_2)
+    key.row(btn_3)
+    logger.debug("expenses")
+
+    bot.send_message(call.chat.id, f'Please check the details, is it correct?\n'
+                                   f'Your project_name: {project_name}\n'
+                                   f'Your tasks: {tasks}\n'
+                                   f'Your expenses: {expenses}\n', reply_markup=key )
+
+    Arg.dell = call
+
+
+@bot.message_handler(func=lambda msg: msg.text == 'Save it')
+def save_dates_project(self):
+    # self.from_user.first_name
+    id, project_name, tasks, expenses = Arg.data_table
+    data = Details(self.from_user.first_name, id, project_name, tasks, expenses)
+    data.insert_details()
+    bot.send_message(self.chat.id, "Ох и вышло же")
 
 
 bot.polling()
