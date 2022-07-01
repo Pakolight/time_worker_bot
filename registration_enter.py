@@ -19,8 +19,11 @@ from db_worck import SQL_worker
 from db_worck import Getdate
 from db_worck import Insert
 from db_worck import Details
+from db_worck import List_work
 from telebot.types import ReplyKeyboardMarkup as KB
 from telebot.types import KeyboardButton as RB
+from telebot.types import InlineKeyboardMarkup as IK
+from telebot.types import InlineKeyboardButton as IB
 
 bot = telebot.TeleBot('5300780935:AAGXX1j__hX2g3NA8WrMmUZtyuN1es1WcQM')
 
@@ -255,6 +258,16 @@ def tasks(call):
 
     bot.delete_message(call.chat.id, Arg.dell.id)
 
+    call = bot.send_message(call.chat.id, "Your distance for calculation of transport costs in km")
+    bot.register_next_step_handler(call, km_total)
+
+    Arg.dell = call
+
+def km_total(call):
+    Arg.data_table += [call.text]
+
+    bot.delete_message(call.chat.id, Arg.dell.id)
+
     call = bot.send_message(call.chat.id, "Enter your expenses")
     bot.register_next_step_handler(call, expenses)
 
@@ -263,7 +276,7 @@ def tasks(call):
 
 def expenses(call):
     Arg.data_table += [call.text]
-    id, project_name, tasks, expenses = Arg.data_table
+    id, project_name, tasks, km, expenses = Arg.data_table
 
     bot.delete_message(call.chat.id, Arg.dell.id)
 
@@ -273,11 +286,11 @@ def expenses(call):
     btn_3 = RB(text='Сancell')
     key.row(btn_1, btn_2)
     key.row(btn_3)
-    logger.debug("expenses")
 
     bot.send_message(call.chat.id, f'Please check the details, is it correct?\n'
                                    f'Your project_name: {project_name}\n'
                                    f'Your tasks: {tasks}\n'
+                                   f'Your distance: {km}\n'
                                    f'Your expenses: {expenses}\n', reply_markup=key )
 
     Arg.dell = call
@@ -286,10 +299,54 @@ def expenses(call):
 @bot.message_handler(func=lambda msg: msg.text == 'Save it')
 def save_dates_project(self):
     # self.from_user.first_name
+
+    save_dates_project = KB(resize_keyboard=True, row_width=1)
+    btn_3 = RB(text='Back')
+    save_dates_project.row(btn_3)
+
     id, project_name, tasks, expenses = Arg.data_table
     data = Details(self.from_user.first_name, id, project_name, tasks, expenses)
     data.insert_details()
-    bot.send_message(self.chat.id, "Ох и вышло же")
+    bot.send_message(self.chat.id, "I save it", reply_markup=save_dates_project)
+
+
+#Меню редактирования листа проектов
+@bot.message_handler(func=lambda msg: msg.text in {'Edit data',})
+def edit_menue(self):
+    edit_menue = KB(resize_keyboard=True, row_width=1)
+    btn_1 = RB(text='Add new day')
+    btn_2 = RB(text='Edit day')
+    btn_3 = RB(text='Back')
+    edit_menue.row(btn_1, btn_2)
+    edit_menue.row(btn_3)
+
+    bot.send_message(self.chat.id, "Choose what to do.", reply_markup=edit_menue,)
+
+@bot.message_handler(func=lambda msg: msg.text in {'Edit day'})
+def list_projects(self):
+    data = List_work( self.from_user.first_name, self.from_user.id,)
+    bot.send_message(self.chat.id, f"{data.out_list()}")
+
+@bot.message_handler(func=lambda msg: "/edit" in msg.text )
+def edit_project(self):
+    Arg.data_table = []
+    Arg.data_table += re.split('/edit', self.text, maxsplit=1)
+    logger.info(Arg.data_table)
+
+    edit_project = IK(row_width=1)
+    kb1 = IB(text="Edit project name", callback_data="/edit_project")
+    kb2 = IB(text="Edit tasks", callback_data="/edit_tasks")
+    kb3 = IB(text="Edit other costs", callback_data="/edit_other_ex")
+    kb4 = IB(text="Edit time start work", callback_data="/edit_time_start")
+    kb5 = IB(text="Edit time end work", callback_data="/edit_time_end")
+    kb6 = IB(text="Edit your distance", callback_data="/edit_km")
+    edit_project.row(kb1, kb2, kb3, kb4, kb5, kb6)
+    bot.send_message(self.chat.id, 'Select the editable content.', reply_markup=edit_project)
+
+@bot.callback_query_handler(func=lambda msg: "/edit_" in msg.text):
+def edit_position(self):
+    Arg.data_table += re.split('/edit_', self.text, maxsplit=1)
+
 
 
 bot.polling()

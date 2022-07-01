@@ -183,11 +183,12 @@ class Insert():
 
 class Details():
 
-    def __init__(self, user, id, project_name, tasks, expenses):
+    def __init__(self, user, id, project_name, tasks, km, expenses):
         self.user = user
         self.id = id
         self.project_name = project_name
         self.tasks = tasks
+        self.km = km
         self.expenses = expenses
 #Определяет последний проект по id чекает самый большой
     def lust_project(self):
@@ -205,16 +206,42 @@ class Details():
         try:
             with connection.cursor() as cur:
                 cur.execute(""" UPDATE {0}
-                                SET project='{1}', tasks='{2}', other_ex={3}
-                                WHERE id_name={4};"""
+                                SET project='{1}', tasks='{2}', km={3} other_ex={4},
+                                WHERE id_name={5};"""
                             .format(f"{str(self.user) + '_' + str(self.id)}",
                                     f"{self.project_name}",
                                     f"{self.tasks}",
+                                    f"{self.km}"
                                     f"{self.expenses}",
                                     f"{int(id_project)}"))
                 connection.commit()
         except:
             connection.close()
+
+class List_work():
+
+    def __init__(self, user, id,):
+        self.user = user
+        self.id = id
+
+    def out_list(self):
+        #try:
+            with connection.cursor() as cur:
+                cur.execute(""" SELECT id_name, project 
+                                FROM {0} ;"""
+                            .format(f"{str(self.user) + '_' + str(self.id)}",))
+                arg = cur.fetchall()
+                logger.info(arg)
+                text = ""
+                for i in arg:
+                    text += f"\n{i[0]}    {i[1]}    /edit{i[0]}   /dell{i[0]} "
+                logger.info(text)
+                return text
+
+        #except:
+            #connection.close()
+
+
 
 
 
