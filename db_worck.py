@@ -211,7 +211,7 @@ class Details():
                             .format(f"{str(self.user) + '_' + str(self.id)}",
                                     f"{self.project_name}",
                                     f"{self.tasks}",
-                                    f"{self.km}"
+                                    f"{self.km}",
                                     f"{self.expenses}",
                                     f"{int(id_project)}"))
                 connection.commit()
@@ -225,7 +225,8 @@ class List_work():
         self.id = id
 
     def out_list(self):
-        #try:
+        connection = psycopg2.connect(URI, sslmode="require")
+        try:
             with connection.cursor() as cur:
                 cur.execute(""" SELECT id_name, project 
                                 FROM {0} ;"""
@@ -234,12 +235,60 @@ class List_work():
                 logger.info(arg)
                 text = ""
                 for i in arg:
-                    text += f"\n{i[0]}    {i[1]}    /edit{i[0]}   /dell{i[0]} "
+                    text += f"\n{i[0]} /i{i[0]}  {i[1]}   /edit{i[0]} /dell{i[0]}"
                 logger.info(text)
                 return text
+        except:
+            connection.close()
+    def out_info(self, id_name):
+        connection = psycopg2.connect(URI, sslmode="require")
+        #try:
+        with connection.cursor() as cur:
+            cur.execute(""" update {0}
+                                set ex = (km * arg_km) + other_ex;"""
+                        .format(f"{str(self.user) + '_' + str(self.id)}",))
+            connection.commit()
 
-        #except:
-            #connection.close()
+        with connection.cursor() as cur:
+            cur.execute(""" SELECT date_st, project, tasks, time_start, time_end, 
+                            time_end - time_start as duration, desc_ex, km, km * arg_km as km_cost , other_ex, ex, 
+                            (((to_number(to_char((time_end - time_start), 'ssss'  ), '99999') * costs) / arg_time ) + ex ) 
+                            AS price from {0} WHERE id_name={1};"""
+                        .format(f"{str(self.user) + '_' + str(self.id)}", id_name[1]))
+            arg = cur.fetchall()
+            logger.info(arg)
+            return arg
+
+
+class Edit():
+    def __init__(self, user, id, id_name, arg, text):
+        self.user = user
+        self.id = id
+        self.arg = arg
+        self.id_name = id_name
+        self.text = text
+
+    def edit_row(self):
+        connection = psycopg2.connect(URI, sslmode="require")
+
+        try:
+            with connection.cursor() as cur:
+                cur.execute("""UPDATE {0}
+                               SET {1} ='{2}'
+                               WHERE id_name = {3};"""
+                            .format(f"{str(self.user) + '_' + str(self.id)}",
+                                    f"{self.arg}",
+                                    f"{self.text}",
+                                    f"{self.id_name}"))
+            connection.commit()
+            return "Change made!"
+        except:
+            return "Data entry error!\n " \
+                   "Enter cost in the form 12.00\n " \
+                   "Start time in the form 2022-07-01 11:35:25.00 +00"
+
+        finally:
+            connection.close()
 
 
 
@@ -255,8 +304,6 @@ class List_work():
 
 
 
-#test = Getdate("580359043")
-#test.create_time_table()
 
 
 

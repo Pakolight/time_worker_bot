@@ -20,6 +20,7 @@ from db_worck import Getdate
 from db_worck import Insert
 from db_worck import Details
 from db_worck import List_work
+from db_worck import Edit
 from telebot.types import ReplyKeyboardMarkup as KB
 from telebot.types import KeyboardButton as RB
 from telebot.types import InlineKeyboardMarkup as IK
@@ -68,7 +69,7 @@ def admin(self):
 @bot.message_handler(func=lambda msg: msg.text in {'Sing UP', 'Put in again'})
 def sing_up(self):
     Arg.data_table = []
-    bot.delete_message(self.chat.id, Arg.dell.id)
+
     call = bot.send_message(self.chat.id, 'Enter your email address', )
     bot.register_next_step_handler(call, new_user_log)
     Arg.dell = call
@@ -79,13 +80,13 @@ def new_user_log(call):
     email = call.text
     result = re.findall(r"([a-z0-9_-]+\.)*[a-z0-9_-]+@[a-z0-9_-]+(\.[a-z0-9_-]+)*\.[a-z]{2,6}", email)
     if len(result) != 0:
-        bot.delete_message(call.chat.id, Arg.dell.id)
+
         Arg.data_table += [email, call.from_user.id, call.from_user.first_name, ]
         call = bot.send_message(call.chat.id, f'Email adres {call.text} was add\n Next enter yor pass in English')
         Arg.dell = call
         bot.register_next_step_handler(call, new_user_pass)
     else:
-        bot.delete_message(call.chat.id, Arg.dell.id)
+
         call = bot.send_message(call.chat.id, 'Input type doesn\'t match format example.address@gmail.com')
         Arg.dell = call
         bot.register_next_step_handler(call, new_user_log)
@@ -96,13 +97,13 @@ def new_user_pass(call):
     result = re.findall(r"[a-z]|[A-Z]|[1-9]", pass_user)
     if len(result) != 0:
         Arg.data_table += [call.text]
-        bot.delete_message(call.chat.id, Arg.dell.id)
+
         call = bot.send_message(call.chat.id, 'enter the cost of 1 hour of your work in the format 20.5')
         Arg.dell = call
         bot.register_next_step_handler(call, cost_hour)
 
     else:
-        bot.delete_message(call.chat.id, Arg.dell.id)
+
         call = bot.send_message(call.chat.id, 'Input type doesn\'t match format please try enter password:\n'
                                               'Uppercase letters: A-Z\n'
                                               'Lowercase letters: a-z\n'
@@ -113,18 +114,20 @@ def new_user_pass(call):
 
 
 def cost_hour(call):
-    Arg.data_table += [call.text]
-    bot.delete_message(call.chat.id, Arg.dell.id)
+    result = re.sub(r',|\.', '.', f'{call.text}')
+    logger.debug(result)
+
+    Arg.data_table += [result]
+
     call = bot.send_message(call.chat.id, 'enter the cost of 1 km transport in the format 19.5')
     Arg.dell = call
     bot.register_next_step_handler(call, cost_km)
 
 
 def cost_km(call):
-    Arg.data_table += [call.text]
+    result = re.sub(r',|\.', '.', f'{call.text}')
+    Arg.data_table += [result]
     mail, id, user_name, user_pass, cost_hour, cost_km = Arg.data_table
-
-    bot.delete_message(call.chat.id, Arg.dell.id)
 
     key = KB(resize_keyboard=True, row_width=1)
     btn_1 = RB(text='Save')
@@ -148,7 +151,7 @@ def sing_in(self):
     key = KB(resize_keyboard=True, row_width=1)
     btn_1 = RB(text='Go to work')
     key.row(btn_1, )
-    bot.delete_message(self.chat.id, Arg.dell.id)
+
     mail, id, user_name, user_pass, cost_hour, cost_km = Arg.data_table
     logger.debug(f"Repack done{mail, id, user_name, user_pass, cost_hour, cost_km}", )
     sql = SQL_worker(mail, id, user_name, user_pass, cost_hour, cost_km)
@@ -159,7 +162,7 @@ def sing_in(self):
 # попадаем в меню пользователя
 @bot.message_handler(func=lambda msg: msg.text in {'Go to my account', "Back", "Go to work"})
 def test(self):
-    bot.delete_message(self.chat.id, Arg.dell.id)
+
     key = KB(resize_keyboard=True, row_width=1)
     btn_1 = RB(text='Working day')
     btn_2 = RB(text='Edit data')
@@ -175,7 +178,7 @@ def test(self):
 def test(self):
     check = Getdate(self.from_user.id)
     if check.check_start_day():
-        bot.delete_message(self.chat.id, Arg.dell.id)
+
 
         key = KB(resize_keyboard=True, row_width=1)
         btn_2 = RB(text='End the day')
@@ -201,8 +204,6 @@ def test(self):
     data = Getdate(self.from_user.id)
     data.create_time_table()
 
-    bot.delete_message(self.chat.id, Arg.dell.id)
-
     key = KB(resize_keyboard=True, row_width=1)
     btn_2 = RB(text='End the day')
     btn_3 = RB(text='Back')
@@ -220,8 +221,6 @@ def end_day(self):
     key.row(btn_2)
     key.row(btn_3)
 
-    bot.delete_message(self.chat.id, Arg.dell.id)
-
     data = Getdate(self.from_user.id)
     data.end_day()
     data2 = Insert(self.from_user.id, self.from_user.first_name)
@@ -234,7 +233,6 @@ def end_day(self):
 # Принемает данные проекта, заносит их во временную переменную
 @bot.message_handler(func=lambda msg: msg.text in {'Enter details', 'Enter again'})
 def details(self):
-    bot.delete_message(self.chat.id, Arg.dell.id)
 
     call = bot.send_message(self.chat.id, "Enter project name")
     bot.register_next_step_handler(call, project_name)
@@ -246,8 +244,6 @@ def project_name(call):
     Arg.data_table = [call.from_user.id]
     Arg.data_table += [call.text]
 
-    bot.delete_message(call.chat.id, Arg.dell.id)
-
     call = bot.send_message(call.chat.id, "Enter your tasks")
     bot.register_next_step_handler(call, tasks)
 
@@ -257,8 +253,6 @@ def project_name(call):
 def tasks(call):
     Arg.data_table += [call.text]
 
-    bot.delete_message(call.chat.id, Arg.dell.id)
-
     call = bot.send_message(call.chat.id, "Your distance for calculation of transport costs in km")
     bot.register_next_step_handler(call, km_total)
 
@@ -266,8 +260,6 @@ def tasks(call):
 
 def km_total(call):
     Arg.data_table += [call.text]
-
-    bot.delete_message(call.chat.id, Arg.dell.id)
 
     call = bot.send_message(call.chat.id, "Enter your expenses")
     bot.register_next_step_handler(call, expenses)
@@ -278,8 +270,6 @@ def km_total(call):
 def expenses(call):
     Arg.data_table += [call.text]
     id, project_name, tasks, km, expenses = Arg.data_table
-
-    bot.delete_message(call.chat.id, Arg.dell.id)
 
     key = KB(resize_keyboard=True, row_width=1)
     btn_1 = RB(text='Save it')
@@ -305,8 +295,8 @@ def save_dates_project(self):
     btn_3 = RB(text='Back')
     save_dates_project.row(btn_3)
 
-    id, project_name, tasks, expenses = Arg.data_table
-    data = Details(self.from_user.first_name, id, project_name, tasks, expenses)
+    id, project_name, tasks, km, expenses = Arg.data_table
+    data = Details(self.from_user.first_name, id, project_name, tasks, km, expenses)
     data.insert_details()
     bot.send_message(self.chat.id, "I save it", reply_markup=save_dates_project)
 
@@ -325,32 +315,80 @@ def edit_menue(self):
 
 @bot.message_handler(func=lambda msg: msg.text in {'Edit day'})
 def list_projects(self):
-    data = List_work( self.from_user.first_name, self.from_user.id,)
+    data = List_work(self.from_user.first_name, self.from_user.id,)
     bot.send_message(self.chat.id, f"{data.out_list()}")
 
 @bot.message_handler(func=lambda msg: "/edit" in msg.text )
 def edit_project(self):
     Arg.data_table = []
     Arg.data_table += re.split('/edit', self.text, maxsplit=1)
-    logger.info(Arg.data_table)
 
     edit_project = IK(row_width=1)
     kb1 = IB(text="Edit project name", callback_data="/edit_project")
     kb2 = IB(text="Edit tasks", callback_data="/edit_tasks")
     kb3 = IB(text="Edit other costs", callback_data="/edit_other_ex")
-    kb4 = IB(text="Edit time start work", callback_data="/edit_time_start")
-    kb5 = IB(text="Edit time end work", callback_data="/edit_time_end")
+    kb4 = IB(text="Edit time start work", callback_data="/t_time_start")
+    kb5 = IB(text="Edit time end work", callback_data="/t_time_end")
     kb6 = IB(text="Edit your distance", callback_data="/edit_km")
-    edit_project.row(kb1, kb2, kb3, kb4, kb5, kb6)
+    edit_project.add(kb1, kb2, kb3, kb4, kb5, kb6)
     bot.send_message(self.chat.id, 'Select the editable content.', reply_markup=edit_project)
 
 @bot.callback_query_handler(func=lambda msg: "/edit_" in msg.data)
 def edit_position(self):
     Arg.data_call = []
     Arg.data_call += re.split('/edit_', self.data, maxsplit=1)
-    logger.info(Arg.data_call)
-    pass
+    call = bot.send_message(self.message.chat.id, "Enter data")
+    bot.register_next_step_handler(call, edit_row)
+
+def edit_row(self):
+    data = Edit(self.from_user.first_name, self.from_user.id, Arg.data_table[1], Arg.data_call[1], self.text)
+    mess = data.edit_row()
+
+    edit_row = KB(resize_keyboard=True, row_width=1)
+    btn_2 = RB(text='Сontinue editing')
+    btn_3 = RB(text='Back')
+    edit_row.row(btn_2, btn_3)
+    bot.send_message(self.chat.id, f"{mess}", reply_markup=edit_row,)
 
 
+@bot.callback_query_handler(func=lambda msg: "/t_" in msg.data)
+def edit_position(self):
+    Arg.data_call = []
+    Arg.data_call += re.split('/t_', self.data, maxsplit=1)
+    call = bot.send_message(self.message.chat.id, "Enter data")
+    bot.register_next_step_handler(call, edit_t)
+
+def edit_t(self):
+    result = re.sub(r'-|\.', '-', f'{self.text}') + "+02"
+    logger.debug(result)
+    data = Edit(self.from_user.first_name, self.from_user.id, Arg.data_table[1], Arg.data_call[1], result)
+    mess = data.edit_row()
+
+    edit_row = KB(resize_keyboard=True, row_width=1)
+    btn_2 = RB(text='Сontinue editing')
+    btn_3 = RB(text='Back')
+    edit_row.row(btn_2, btn_3)
+    bot.send_message(self.chat.id, f"{mess}", reply_markup=edit_row,)
+
+@bot.message_handler(func=lambda msg: msg.text in {'Сontinue editing'})
+def edit_project(self):
+
+    edit_project = IK(row_width=1)
+    kb1 = IB(text="Edit project name", callback_data="/edit_project")
+    kb2 = IB(text="Edit tasks", callback_data="/edit_tasks")
+    kb3 = IB(text="Edit other costs", callback_data="/edit_other_ex")
+    kb4 = IB(text="Edit time start work", callback_data="/t_time_start")
+    kb5 = IB(text="Edit time end work", callback_data="/t_time_end")
+    kb6 = IB(text="Edit your distance", callback_data="/edit_km")
+    edit_project.add(kb1, kb2, kb3, kb4, kb5, kb6,)
+    bot.send_message(self.chat.id, 'Select the editable content.', reply_markup=edit_project,)
+
+@bot.message_handler(func=lambda msg: "/i" in msg.text )
+def info(self):
+    Arg.data_call = []
+    Arg.data_call += re.split('/i', self.text, maxsplit=1)
+    arg = List_work(self.from_user.first_name, self.from_user.id,)
+    info = arg.out_info(Arg.data_call)
+    bot.send_message(self.chat.id, f'{info}')
 
 bot.polling()
