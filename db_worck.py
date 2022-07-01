@@ -1,6 +1,8 @@
 import psycopg2
+import re
 from loguru import logger
 from config import URI
+
 connection = psycopg2.connect(URI, sslmode="require")
 connection.autocommit = True
 
@@ -242,22 +244,36 @@ class List_work():
             connection.close()
     def out_info(self, id_name):
         connection = psycopg2.connect(URI, sslmode="require")
-        #try:
-        with connection.cursor() as cur:
-            cur.execute(""" update {0}
-                                set ex = (km * arg_km) + other_ex;"""
-                        .format(f"{str(self.user) + '_' + str(self.id)}",))
-            connection.commit()
+        try:
+            with connection.cursor() as cur:
+                cur.execute(""" update {0}
+                                    set ex = (km * arg_km) + other_ex;"""
+                            .format(f"{str(self.user) + '_' + str(self.id)}",))
+                connection.commit()
 
-        with connection.cursor() as cur:
-            cur.execute(""" SELECT date_st, project, tasks, time_start, time_end, 
-                            time_end - time_start as duration, desc_ex, km, km * arg_km as km_cost , other_ex, ex, 
-                            (((to_number(to_char((time_end - time_start), 'ssss'  ), '99999') * costs) / arg_time ) + ex ) 
-                            AS price from {0} WHERE id_name={1};"""
-                        .format(f"{str(self.user) + '_' + str(self.id)}", id_name[1]))
-            arg = cur.fetchall()
-            logger.info(arg)
-            return arg
+            with connection.cursor() as cur:
+                cur.execute(""" SELECT date_st, project, tasks, time_start, time_end, 
+                                time_end - time_start as duration, desc_ex, km, km * arg_km as km_cost , other_ex, ex, 
+                                (((to_number(to_char((time_end - time_start), 'ssss'  ), '99999') * costs) / arg_time ) + ex ) 
+                                AS price from {0} WHERE id_name={1};"""
+                            .format(f"{str(self.user) + '_' + str(self.id)}", id_name[1]))
+                arg = cur.fetchone()
+        except:
+            connection.close()
+
+        logger.info(arg)
+        time_st = re.sub(r'\+00:00', '', f'{arg[3]}')
+        time_end = re.sub(r'\+00:00', '', f'{arg[4]}')
+        return f"Data: {arg[0]}\n" \
+                f"Project: {arg[1]}\n" \
+                f"Tasks: {arg[2]}\n" \
+                f"Time start: {time_st}\n" \
+                f"Time end: {time_end}\n" \
+                f"Duration: {arg[5]}\n" \
+                f"Km: {arg[7]}\n" \
+                f"other_ex: {arg[8]}\n" \
+                f"Ex: {arg[9]}\n" \
+                f"Total: {round(float(arg[11]), 1)}\n" \
 
 
 class Edit():
@@ -289,27 +305,6 @@ class Edit():
 
         finally:
             connection.close()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
