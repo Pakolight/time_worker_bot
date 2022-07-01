@@ -31,6 +31,7 @@ bot = telebot.TeleBot('5300780935:AAGXX1j__hX2g3NA8WrMmUZtyuN1es1WcQM')
 class Arg:
     dell = None
     data_table = None
+    data_call = None
 
 
 @bot.message_handler(func=lambda msg: msg.text in {'Сancell', 'Next time'})
@@ -343,9 +344,12 @@ def edit_project(self):
     edit_project.row(kb1, kb2, kb3, kb4, kb5, kb6)
     bot.send_message(self.chat.id, 'Select the editable content.', reply_markup=edit_project)
 
-@bot.callback_query_handler(func=lambda msg: "/edit_" in msg.text):
+@bot.callback_query_handler(func=lambda msg: "/edit_" in msg.data)
 def edit_position(self):
-    Arg.data_table += re.split('/edit_', self.text, maxsplit=1)
+    Arg.data_call = []
+    Arg.data_call += re.split('/edit_', self.data, maxsplit=1)
+    logger.info(Arg.data_call)
+    pass
 
 
 
