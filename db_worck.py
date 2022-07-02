@@ -227,6 +227,7 @@ class List_work():
         self.id = id
 
     def out_list(self):
+        logger.info("ime in out_list")
         connection = psycopg2.connect(URI, sslmode="require")
         try:
             with connection.cursor() as cur:
@@ -235,13 +236,20 @@ class List_work():
                             .format(f"{str(self.user) + '_' + str(self.id)}",))
                 arg = cur.fetchall()
                 logger.info(arg)
-                text = ""
+                text = "List projects:"
                 for i in arg:
                     text += f"\n{i[0]} /i{i[0]}  {i[1]}   /edit{i[0]} /dell{i[0]}"
                 logger.info(text)
-                return text
+                if text == "List projects:":
+                    return f"Sorry {str(self.user)} you have no added dates."
+                else:
+                    return text
         except:
+            return f"Sorry {str(self.user)} you have no added dates."
+
+        finally:
             connection.close()
+
     def out_info(self, id_name):
         connection = psycopg2.connect(URI, sslmode="require")
         try:
@@ -261,7 +269,6 @@ class List_work():
         except:
             connection.close()
 
-        logger.info(arg)
         time_st = re.sub(r'\+00:00', '', f'{arg[3]}')
         time_end = re.sub(r'\+00:00', '', f'{arg[4]}')
         return f"Data: {arg[0]}\n" \
@@ -274,6 +281,24 @@ class List_work():
                 f"other_ex: {arg[8]}\n" \
                 f"Ex: {arg[9]}\n" \
                 f"Total: {round(float(arg[11]), 1)}\n" \
+
+    def dell (self, id_name):
+        connection = psycopg2.connect(URI, sslmode="require")
+        try:
+            logger.info(id_name)
+            with connection.cursor() as cur:
+                cur.execute(""" DELETE FROM {0}
+                                where id_name = {1};"""
+                            .format(f"{str(self.user) + '_' + str(self.id)}", id_name[1]))
+
+                connection.commit()
+                return f"Dellet project {id_name[1]} is done."
+        except:
+            return f"Error List_work.dell() "
+
+        finally:
+            connection.close()
+
 
 
 class Edit():

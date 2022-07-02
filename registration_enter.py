@@ -391,4 +391,12 @@ def info(self):
     info = arg.out_info(Arg.data_call)
     bot.send_message(self.chat.id, f'{info}')
 
+@bot.message_handler(func=lambda msg: "/dell" in msg.text )
+def info(self):
+    Arg.data_call = []
+    Arg.data_call += re.split('/dell', self.text, maxsplit=1)
+    arg = List_work(self.from_user.first_name, self.from_user.id,)
+    info = arg.dell(Arg.data_call)
+    bot.send_message(self.chat.id, f'{info}')
+
 bot.polling()
