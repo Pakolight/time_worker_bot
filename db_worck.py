@@ -239,6 +239,8 @@ class Details():
 
 class List_work():
 
+    args_all = None
+
     def __init__(self, user, id,):
         self.user = user
         self.id = id
@@ -324,6 +326,26 @@ class List_work():
 
             arg = cur.fetchall()
             return max(arg[0])
+
+    def out_pdf(self):
+        try:
+            with connection.cursor() as cur:
+
+                cur.execute(""" update {0}
+                                set ex = (km * arg_km) + other_ex;
+                                SELECT  date_st, project, tasks, time_start, 
+                                        time_end,time_end - time_start as duration, 
+                                        desc_ex, km, km * arg_km as km_cost ,  
+                                        other_ex, ex,                             
+                            (((to_number(to_char((time_end - time_start), 'ssss'  ), '99999') * costs) / arg_time ) + ex ) as price
+                                        from {0}; """.format(f"{str(self.user) + '_' + str(self.id)}",)
+                            )
+
+
+                self.args_all = cur.fetchall()
+        except:
+            connection.close()
+            logger.debug("in argument pdf")
 
 
 

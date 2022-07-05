@@ -399,7 +399,7 @@ def info(self):
     bot.send_message(self.chat.id, f'{info}')
 
 
-@bot.message_handler(func=lambda msg: msg.text in 'Add new day' )
+@bot.message_handler(func=lambda msg: msg.text in 'Add new day')
 def add_new_date(self):
     data = Getdate(self.from_user.id)
     data.create_time_table()
@@ -421,6 +421,11 @@ def add_new_date(self):
     kb6 = IB(text="Edit your distance", callback_data="/edit_km")
     edit_project.add(kb1, kb2, kb3, kb4, kb5, kb6)
     bot.send_message(self.chat.id, 'Select the adding otion.', reply_markup=edit_project)
+
+
+
+@bot.message_handler(func=lambda msg: msg.text in 'Output table')
+def pdf(self):
 
 
 
