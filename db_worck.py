@@ -183,6 +183,23 @@ class Insert():
         except:
             connection.close()
 
+    def add_data(self):
+            connection = psycopg2.connect(URI, sslmode="require")
+
+        #try:
+            with connection.cursor() as cur:
+                cur.execute(""" INSERT INTO {0} (project, time_start) VALUES ('New Project', CURRENT_TIMESTAMP)
+                                ;"""
+                            .format(f"{str(self.user) + '_' + str(self.id)}",
+                                    f"{'daytime_user' + '_' + str(self.id)}",
+                                    ))
+
+                logger.info("Добавид в основную табл данные '1' ")
+                connection.commit()
+
+        #except:
+                connection.close()
+
 class Details():
 
     def __init__(self, user, id, project_name, tasks, km, expenses):
@@ -299,6 +316,15 @@ class List_work():
         finally:
             connection.close()
 
+    def lust_project(self):
+        connection = psycopg2.connect(URI, sslmode="require")
+
+        with connection.cursor() as cur:
+            cur.execute(""" SELECT id_name FROM {0};""".format(f"{str(self.user) + '_' + str(self.id)}",))
+
+            arg = cur.fetchall()
+            return max(arg[0])
+
 
 
 class Edit():
@@ -330,6 +356,13 @@ class Edit():
 
         finally:
             connection.close()
+
+
+
+
+
+
+
 
 
 

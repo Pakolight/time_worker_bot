@@ -161,11 +161,11 @@ def sing_in(self):
 
 # попадаем в меню пользователя
 @bot.message_handler(func=lambda msg: msg.text in {'Go to my account', "Back", "Go to work"})
-def test(self):
+def user_m(self):
 
     key = KB(resize_keyboard=True, row_width=1)
     btn_1 = RB(text='Working day')
-    btn_2 = RB(text='Edit data')
+    btn_2 = RB(text='Worck  data')
     btn_3 = RB(text='Output table')
     key.row(btn_1, btn_2)
     key.row(btn_3)
@@ -237,7 +237,6 @@ def details(self):
     call = bot.send_message(self.chat.id, "Enter project name")
     bot.register_next_step_handler(call, project_name)
 
-    Arg.dell = call
 
 
 def project_name(call):
@@ -302,7 +301,7 @@ def save_dates_project(self):
 
 
 #Меню редактирования листа проектов
-@bot.message_handler(func=lambda msg: msg.text in {'Edit data',})
+@bot.message_handler(func=lambda msg: msg.text in {'Worck  data',})
 def edit_menue(self):
     edit_menue = KB(resize_keyboard=True, row_width=1)
     btn_1 = RB(text='Add new day')
@@ -398,5 +397,31 @@ def info(self):
     arg = List_work(self.from_user.first_name, self.from_user.id,)
     info = arg.dell(Arg.data_call)
     bot.send_message(self.chat.id, f'{info}')
+
+
+@bot.message_handler(func=lambda msg: msg.text in 'Add new day' )
+def add_new_date(self):
+    data = Getdate(self.from_user.id)
+    data.create_time_table()
+    data.end_day()
+
+    data2 = List_work(self.from_user.first_name, self.from_user.id)
+    data3 = Insert(self.from_user.id, self.from_user.first_name)
+    data3.add_data()
+
+    Arg.data_table = []
+    Arg.data_table += [0, data2.lust_project()]
+
+    edit_project = IK(row_width=1)
+    kb1 = IB(text="Edit project name", callback_data="/edit_project")
+    kb2 = IB(text="Edit tasks", callback_data="/edit_tasks")
+    kb3 = IB(text="Edit other costs", callback_data="/edit_other_ex")
+    kb4 = IB(text="Edit time start work", callback_data="/t_time_start")
+    kb5 = IB(text="Edit time end work", callback_data="/t_time_end")
+    kb6 = IB(text="Edit your distance", callback_data="/edit_km")
+    edit_project.add(kb1, kb2, kb3, kb4, kb5, kb6)
+    bot.send_message(self.chat.id, 'Select the adding otion.', reply_markup=edit_project)
+
+
 
 bot.polling()
