@@ -2,16 +2,17 @@ from loguru import logger
 
 
 class Table_data:
-    #arg = iter(args_all)
+
     time_arg = None
+
+    def __init__(self, arg_all):
+        self.arg = iter(arg_all)
+
+
     add_arg = [
         ["Date", "Project", "Tasks", "Time start", "Time end", "Duration", "Descreption", "Km", "Km cost", "Other",
          "Total", "Price"],
     ]
-
-    def __init__(self, arg):
-        self.arg = arg
-
 
     def update(self):
         try:

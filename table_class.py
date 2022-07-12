@@ -1,8 +1,7 @@
 
 from create_table_fpdf2 import PDF
 from loguru import logger
-from row_method import Table_data
-table = Table_data()
+
 
 data2 = [
     ["Date", "Project", "Tasks", "Time start", "Time end", "Duration", "Descreption", "Km", "Km cost", "Other", "Total","Price"],

@@ -21,10 +21,14 @@ from db_worck import Insert
 from db_worck import Details
 from db_worck import List_work
 from db_worck import Edit
+from db_worck import Out_pdf
+from create_table_fpdf2 import PDF
+
 from telebot.types import ReplyKeyboardMarkup as KB
 from telebot.types import KeyboardButton as RB
 from telebot.types import InlineKeyboardMarkup as IK
 from telebot.types import InlineKeyboardButton as IB
+
 
 bot = telebot.TeleBot('5300780935:AAGXX1j__hX2g3NA8WrMmUZtyuN1es1WcQM')
 
@@ -426,7 +430,22 @@ def add_new_date(self):
 
 @bot.message_handler(func=lambda msg: msg.text in 'Output table')
 def pdf(self):
-    pass
+    worker = Out_pdf(self.from_user.first_name, self.from_user.id)
+    worker.arg_for_pdf()
+    data = worker.out()
+
+    pdf = PDF('L')
+    pdf.add_page()
+    pdf.set_font("Times", size=10)
+
+    pdf.create_table(table_data=data, title='Time list', cell_width='even')
+    pdf.ln()
+    pdf.output('Timelist.pdf')
+    doc_pdf = open('Timelist.pdf', "rb")
+    bot.send_document(self.chat.id, doc_pdf)
+
+
+
 
 
 bot.polling()
