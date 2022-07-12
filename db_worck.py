@@ -328,10 +328,17 @@ class List_work():
             arg = cur.fetchall()
             return max(arg[0])
 
+    def dell_all_date (self,):
+        connection = psycopg2.connect(URI, sslmode="require")
+        try:
+            with connection.cursor() as cur:
+                cur.execute("""TRUNCATE TABLE {0};"""
+                            .format(f"{str(self.user) + '_' + str(self.id)}", ))
 
-
-
-
+                connection.commit()
+                return f"Dellet all data is done."
+        except:
+            return f"Error dell_all_date() "
 
 
 class Edit():
@@ -421,17 +428,17 @@ class Out_pdf():
 
     def time_start(self):
         text = str(self.time_arg[3])
-        result = re.split("\:\d{2}\.\d{6}\+\d{2}:\d{2}", text, maxsplit=1)
+        result = re.split("\:\d{2}\.\d{6}\+\d{2}:\d{2}|\:\d{2}\+\d{2}\:\d{2}", text, maxsplit=1)
         return str(result[0])
 
     def time_end(self):
         text = str(self.time_arg[4])
-        result = re.split("\:\d{2}\.\d{6}\+\d{2}:\d{2}", text, maxsplit=1)
+        result = re.split("\:\d{2}\.\d{6}\+\d{2}:\d{2}|\:\d{2}\+\d{2}\:\d{2}", text, maxsplit=1)
         return str(result[0])
 
     def duration(self):
         text = str(self.time_arg[5])
-        result = re.split("\.\d{5}", text, maxsplit=1)
+        result = re.split("\:\d{2}\.\d{5}", text, maxsplit=1)
         return str(result[0])
 
     def d_ex(self):
@@ -476,7 +483,121 @@ class Out_pdf():
 
     def out(self):
         self.creat()
+        logger.info(self.add_arg)
         return self.add_arg
+
+class Out_pdf_smal():
+
+    arg = None
+    time_arg = None
+    add_arg = [
+        ["Date", "Project", "Tasks", "Time start", "Time end", "Duration", "Descreption", "Km", "Km cost", "Other",
+         ],
+    ]
+
+    def __init__(self, user, id,):
+        self.user = user
+        self.id = id
+
+    def arg_for_pdf(self):
+        self.add_arg = [
+            ["Date", "Project", "Tasks", "Time start", "Time end", "Duration", "Descreption", "Km", "Km cost", "Other",
+             "Total",],
+        ]
+        try:
+            with connection.cursor() as cur:
+
+                cur.execute(""" update {0}
+                                set ex = (km * arg_km) + other_ex;
+                                SELECT  date_st, project, tasks, time_start, 
+                                        time_end,time_end - time_start as duration, 
+                                        desc_ex, km, km * arg_km as km_cost ,  
+                                        other_ex, ex,                             
+                            (((to_number(to_char((time_end - time_start), 'ssss'  ), '99999') * costs) / arg_time ) + ex ) as price
+                                        from {0}; """.format(f"{str(self.user) + '_' + str(self.id)}", )
+                            )
+
+                Out_pdf_smal.arg = iter(cur.fetchall())
+        except:
+            connection.close()
+            logger.debug("in argument pdf")
+
+    def update(self):
+        try:
+            self.time_arg = next(self.arg)
+            logger.debug("True")
+            return True
+
+        except StopIteration:
+            logger.debug("False")
+            return False
+
+    def date(self):
+        return str(self.time_arg[0])
+
+    def project(self):
+        return str(self.time_arg[1])
+
+    def tasks(self):
+        return str(self.time_arg[2])
+
+    def time_start(self):
+        text = str(self.time_arg[3])
+        result = re.split("\:\d{2}\.\d{6}\+\d{2}:\d{2}|\:\d{2}\+\d{2}\:\d{2}", text, maxsplit=1)
+        return str(result[0])
+
+    def time_end(self):
+        text = str(self.time_arg[4])
+        result = re.split("\:\d{2}\.\d{6}\+\d{2}:\d{2}|\:\d{2}\+\d{2}\:\d{2}", text, maxsplit=1)
+        return str(result[0])
+
+    def duration(self):
+        text = str(self.time_arg[5])
+        result = re.split("\:\d{2}\.\d{5}", text, maxsplit=1)
+        return str(result[0])
+
+    def d_ex(self):
+        return str(self.time_arg[6])
+
+    def km(self):
+        return str(self.time_arg[7])
+
+    def km_cost(self):
+        return str(self.time_arg[8])
+
+    def o_ex(self):
+        return str(self.time_arg[9])
+
+    def ex(self):
+        return str(self.time_arg[10])
+
+
+
+    def creat(self):
+        if self.update():
+            self.add_arg.append([self.date(),
+                                 self.date(),
+                                 self.tasks(),
+                                 self.time_start(),
+                                 self.time_end(),
+                                 self.duration(),
+                                 self.d_ex(),
+                                 self.km(),
+                                 self.km_cost(),
+                                 self.o_ex(),
+                                 self.ex(),
+                                 ])
+            logger.info(f"Eteration\n" )
+            self.creat()
+
+        else:
+            return(self.add_arg)
+
+    def out(self):
+        self.creat()
+        return self.add_arg
+
+
 
 
 
