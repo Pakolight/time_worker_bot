@@ -143,7 +143,6 @@ class Getdate():
                             .format(f"{'daytime_user' + '_' + str(self.id)}", ))
                 logger.info("Добавид время оканчания")
                 connection.commit()
-
         except:
             connection.close()
 
@@ -186,19 +185,19 @@ class Insert():
     def add_data(self):
             connection = psycopg2.connect(URI, sslmode="require")
 
-        #try:
-            with connection.cursor() as cur:
-                cur.execute(""" INSERT INTO {0} (project, time_start) VALUES ('New Project', CURRENT_TIMESTAMP)
-                                ;"""
-                            .format(f"{str(self.user) + '_' + str(self.id)}",
-                                    f"{'daytime_user' + '_' + str(self.id)}",
-                                    ))
+            try:
+                with connection.cursor() as cur:
+                    cur.execute(""" INSERT INTO {0} (project, time_start) VALUES ('New Project', CURRENT_TIMESTAMP)
+                                    ;"""
+                                .format(f"{str(self.user) + '_' + str(self.id)}",
+                                        f"{'daytime_user' + '_' + str(self.id)}",
+                                        ))
 
-                logger.info("Добавид в основную табл данные '1' ")
-                connection.commit()
+                    logger.info("Добавид в основную табл данные '1' ")
+                    connection.commit()
 
-        #except:
-                connection.close()
+            except:
+                    connection.close()
 
 class Details():
 
@@ -290,16 +289,17 @@ class List_work():
 
         time_st = re.sub(r'\+00:00', '', f'{arg[3]}')
         time_end = re.sub(r'\+00:00', '', f'{arg[4]}')
+        logger.info(arg[0])
         return f"Data: {arg[0]}\n" \
-                f"Project: {arg[1]}\n" \
-                f"Tasks: {arg[2]}\n" \
-                f"Time start: {time_st}\n" \
-                f"Time end: {time_end}\n" \
-                f"Duration: {arg[5]}\n" \
-                f"Km: {arg[7]}\n" \
-                f"other_ex: {arg[8]}\n" \
-                f"Ex: {arg[9]}\n" \
-                f"Total: {round(float(arg[11]), 1)}\n" \
+               f"Project: {arg[1]}\n" \
+               f"Tasks: {arg[2]}\n" \
+               f"Time start: {time_st}\n" \
+               f"Time end: {time_end}\n" \
+               f"Duration: {arg[5]}\n" \
+               f"Km: {arg[7]}\n" \
+               f"other_ex: {arg[8]}\n" \
+               f"Ex: {arg[9]}\n" \
+               f"Total: {round(float(arg[11]), 1)}\n" \
 
     def dell (self, id_name):
         connection = psycopg2.connect(URI, sslmode="require")

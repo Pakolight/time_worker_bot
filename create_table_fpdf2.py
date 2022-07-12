@@ -188,3 +188,4 @@ class PDF(FPDF):
                 self.ln(line_height) # move cursor back to the left margin
         y3 = self.get_y()
         self.line(x_left,y3,x_right,y3)
+

@@ -407,7 +407,7 @@ def add_new_date(self):
 
     data2 = List_work(self.from_user.first_name, self.from_user.id)
     data3 = Insert(self.from_user.id, self.from_user.first_name)
-    data3.add_data()
+    data3.enter_data()
 
     Arg.data_table = []
     Arg.data_table += [0, data2.lust_project()]
@@ -426,7 +426,7 @@ def add_new_date(self):
 
 @bot.message_handler(func=lambda msg: msg.text in 'Output table')
 def pdf(self):
-
+    pass
 
 
 bot.polling()
