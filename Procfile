@@ -1,4 +1,4 @@
-worker: registration_enter.py
+worker: python registration_enter.py
 
 
 
