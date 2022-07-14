@@ -1,3 +1,17 @@
+"""
+1. Просим почту
+    - добавляем в словарь
+2. Просим пароль
+    - добавляем в словарь
+    - сохраняем в бд
+    - создаем в бд таблицу по названию почты
+3. Просим стоимость часа
+    - заносим в бд стоимость часа
+4. Просим стоимость км
+    - заносим стоимость км в бд
+
+"""
+
 import telebot
 import re
 from loguru import logger
@@ -7,10 +21,15 @@ from db_worck import Insert
 from db_worck import Details
 from db_worck import List_work
 from db_worck import Edit
+from db_worck import Out_pdf
+from db_worck import Out_pdf_smal
+from create_table_fpdf2 import PDF
+
 from telebot.types import ReplyKeyboardMarkup as KB
 from telebot.types import KeyboardButton as RB
 from telebot.types import InlineKeyboardMarkup as IK
 from telebot.types import InlineKeyboardButton as IB
+
 
 bot = telebot.TeleBot('5300780935:AAGXX1j__hX2g3NA8WrMmUZtyuN1es1WcQM')
 
@@ -393,7 +412,7 @@ def add_new_date(self):
 
     data2 = List_work(self.from_user.first_name, self.from_user.id)
     data3 = Insert(self.from_user.id, self.from_user.first_name)
-    data3.add_data()
+    data3.enter_data()
 
     Arg.data_table = []
     Arg.data_table += [0, data2.lust_project()]
@@ -410,9 +429,69 @@ def add_new_date(self):
 
 
 
-@bot.message_handler(func=lambda msg: msg.text in 'Output table')
-def pdf(self):
+@bot.message_handler(func=lambda msg: msg.text in {'Output table',})
+def edit_menue(self):
+    Output_table = KB(resize_keyboard=True, row_width=1)
+    btn_1 = RB(text='Big size')
+    btn_2 = RB(text='Small size')
+    btn_3 = RB(text='New reporting period')
+    btn_4 = RB(text='Back')
+    Output_table.row(btn_1, btn_2, btn_3)
+    Output_table.row(btn_4)
+    bot.send_message(self.chat.id, "Choose what to do.", reply_markup=Output_table, )
 
+
+
+@bot.message_handler(func=lambda msg: msg.text in 'Big size')
+def pdf(self):
+    test = [['Date', 'Project', 'Tasks', 'Time start', 'Time end',
+             'Duration', 'Descreption', 'Km', 'Km cost', 'Other', 'Total', 'Price']]
+    worker = Out_pdf(self.from_user.first_name, self.from_user.id)
+    worker.arg_for_pdf()
+    data = worker.out()
+
+    if data != test:
+        pdf = PDF('L')
+        pdf.add_page()
+        pdf.set_font("Times", size=10)
+
+        pdf.create_table(table_data=data, title='Time list', cell_width='even')
+        pdf.ln()
+        pdf.output('Timelist.pdf')
+        doc_pdf = open('Timelist.pdf', "rb")
+        bot.send_document(self.chat.id, doc_pdf)
+    else:
+        bot.send_message(self.chat.id, "Sorry Table is epty :(")
+
+
+
+@bot.message_handler(func=lambda msg: msg.text in 'Small size')
+def pdf(self):
+    test = [['Date', 'Project', 'Tasks', 'Time start', 'Time end', 'Duration',
+             'Descreption', 'Km', 'Km cost', 'Other', 'Total']]
+
+    worker = Out_pdf_smal(self.from_user.first_name, self.from_user.id)
+    worker.arg_for_pdf()
+    data = worker.out()
+
+    if data != test:
+        pdf = PDF('L')
+        pdf.add_page()
+        pdf.set_font("Times", size=10)
+
+        pdf.create_table(table_data=data, title='Time list', cell_width='even')
+        pdf.ln()
+        pdf.output('Timelist.pdf')
+        doc_pdf = open('Timelist.pdf', "rb")
+        bot.send_document(self.chat.id, doc_pdf)
+    else:
+        bot.send_message(self.chat.id, "Sorry Table is epty :(")
+
+
+@bot.message_handler(func=lambda msg: msg.text in 'New reporting period')
+def pdf(self):
+    worker = List_work(self.from_user.first_name, self.from_user.id)
+    bot.send_message(self.chat.id, worker.dell_all_date())
 
 
 bot.polling()
