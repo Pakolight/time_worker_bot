@@ -1,4 +1,4 @@
-worker: registration_enter.py
+web: registration_enter.py
 
 
 
