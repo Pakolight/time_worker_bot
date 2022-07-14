@@ -118,7 +118,7 @@ class Getdate():
 
             try:
                 cur.execute("""CREATE TABLE IF NOT EXISTS {0} (id_name serial NOT NULL,
-                                                                           date_time_st timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP+2,
+                                                                           date_time_st timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                                                            date_time_end timestamptz,
                                                                            project text,
                                                                            location text,
@@ -139,7 +139,7 @@ class Getdate():
 
         try:
             with connection.cursor() as cur:
-                cur.execute(""" UPDATE {0} SET date_time_end = CURRENT_TIMESTAMP+2;"""
+                cur.execute(""" UPDATE {0} SET date_time_end = CURRENT_TIMESTAMP;"""
                             .format(f"{'daytime_user' + '_' + str(self.id)}", ))
                 logger.info("Добавид время оканчания")
                 connection.commit()
