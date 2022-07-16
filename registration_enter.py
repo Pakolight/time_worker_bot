@@ -362,6 +362,7 @@ def edit_position(self):
     call = bot.send_message(self.message.chat.id, "Enter data")
     bot.register_next_step_handler(call, edit_t)
 
+
 def edit_t(self):
     result = re.sub(r'-|\.', '-', f'{self.text}') + "+02"
     logger.debug(result)
@@ -373,6 +374,7 @@ def edit_t(self):
     btn_3 = RB(text='Back')
     edit_row.row(btn_2, btn_3)
     bot.send_message(self.chat.id, f"{mess}", reply_markup=edit_row,)
+
 
 @bot.message_handler(func=lambda msg: msg.text in {'Сontinue editing'})
 def edit_project(self):
@@ -386,6 +388,7 @@ def edit_project(self):
     kb6 = IB(text="Edit your distance", callback_data="/edit_km")
     edit_project.add(kb1, kb2, kb3, kb4, kb5, kb6,)
     bot.send_message(self.chat.id, 'Select the editable content.', reply_markup=edit_project,)
+
 
 @bot.message_handler(func=lambda msg: "/i" in msg.text )
 def info(self):

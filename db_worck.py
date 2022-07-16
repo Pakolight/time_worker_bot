@@ -118,7 +118,8 @@ class Getdate():
 
             try:
                 cur.execute("""CREATE TABLE IF NOT EXISTS {0} (id_name serial NOT NULL,
-                                                                           date_time_st timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                                                           date_time_st timestamptz 
+                                                                           NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                                                            date_time_end timestamptz,
                                                                            project text,
                                                                            location text,
