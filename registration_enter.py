@@ -325,13 +325,14 @@ def edit_project(self):
 
     edit_project = IK(row_width=1)
     kb1 = IB(text="Edit project name", callback_data="/edit_project")
-    kb2 = IB(text="Edit tasks", callback_data="/edit_tasks")
-    kb3 = IB(text="Edit other costs", callback_data="/edit_other_ex")
-    kb4 = IB(text="Edit time start work", callback_data="/t_time_start")
-    kb5 = IB(text="Edit time end work", callback_data="/t_time_end")
-    kb6 = IB(text="Edit your distance", callback_data="/edit_km")
-    edit_project.add(kb1, kb2, kb3, kb4, kb5, kb6)
-    bot.send_message(self.chat.id, 'Select the editable content.', reply_markup=edit_project)
+    kb2 = IB(text="Edit date", callback_data="/edit_date_st")
+    kb3 = IB(text="Edit tasks", callback_data="/edit_tasks")
+    kb4 = IB(text="Edit other costs", callback_data="/edit_other_ex")
+    kb5 = IB(text="Edit time start work", callback_data="/t_time_start")
+    kb6 = IB(text="Edit time end work", callback_data="/t_time_end")
+    kb7 = IB(text="Edit your distance", callback_data="/edit_km")
+    edit_project.add(kb1, kb2, kb3, kb4, kb5, kb6, kb7)
+    bot.send_message(self.chat.id, 'Select the adding otion.', reply_markup=edit_project)
 
 @bot.callback_query_handler(func=lambda msg: "/edit_" in msg.data)
 def edit_position(self):
@@ -376,13 +377,14 @@ def edit_project(self):
 
     edit_project = IK(row_width=1)
     kb1 = IB(text="Edit project name", callback_data="/edit_project")
-    kb2 = IB(text="Edit tasks", callback_data="/edit_tasks")
-    kb3 = IB(text="Edit other costs", callback_data="/edit_other_ex")
-    kb4 = IB(text="Edit time start work", callback_data="/t_time_start")
-    kb5 = IB(text="Edit time end work", callback_data="/t_time_end")
-    kb6 = IB(text="Edit your distance", callback_data="/edit_km")
-    edit_project.add(kb1, kb2, kb3, kb4, kb5, kb6,)
-    bot.send_message(self.chat.id, 'Select the editable content.', reply_markup=edit_project,)
+    kb2 = IB(text="Edit date", callback_data="/edit_date_st")
+    kb3 = IB(text="Edit tasks", callback_data="/edit_tasks")
+    kb4 = IB(text="Edit other costs", callback_data="/edit_other_ex")
+    kb5 = IB(text="Edit time start work", callback_data="/t_time_start")
+    kb6 = IB(text="Edit time end work", callback_data="/t_time_end")
+    kb7 = IB(text="Edit your distance", callback_data="/edit_km")
+    edit_project.add(kb1, kb2, kb3, kb4, kb5, kb6, kb7)
+    bot.send_message(self.chat.id, 'Select the adding otion.', reply_markup=edit_project)
 
 
 @bot.message_handler(func=lambda msg: "/i" in msg.text )
@@ -417,12 +419,13 @@ def add_new_date(self):
 
     edit_project = IK(row_width=1)
     kb1 = IB(text="Edit project name", callback_data="/edit_project")
-    kb2 = IB(text="Edit tasks", callback_data="/edit_tasks")
-    kb3 = IB(text="Edit other costs", callback_data="/edit_other_ex")
-    kb4 = IB(text="Edit time start work", callback_data="/t_time_start")
-    kb5 = IB(text="Edit time end work", callback_data="/t_time_end")
-    kb6 = IB(text="Edit your distance", callback_data="/edit_km")
-    edit_project.add(kb1, kb2, kb3, kb4, kb5, kb6)
+    kb2 = IB(text="Edit date", callback_data="/edit_date_st")
+    kb3 = IB(text="Edit tasks", callback_data="/edit_tasks")
+    kb4 = IB(text="Edit other costs", callback_data="/edit_other_ex")
+    kb5 = IB(text="Edit time start work", callback_data="/t_time_start")
+    kb6 = IB(text="Edit time end work", callback_data="/t_time_end")
+    kb7 = IB(text="Edit your distance", callback_data="/edit_km")
+    edit_project.add(kb1, kb2, kb3, kb4, kb5, kb6, kb7)
     bot.send_message(self.chat.id, 'Select the adding otion.', reply_markup=edit_project)
 
 

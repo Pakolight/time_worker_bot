@@ -206,12 +206,15 @@ class Details():
 #Определяет последний проект по id чекает самый большой
     def lust_project(self):
         connection = psycopg2.connect(URI, sslmode="require")
-
-        with connection.cursor() as cur:
-            cur.execute(""" SELECT id_name FROM {0};""".format(f"{str(self.user) + '_' + str(self.id)}",))
-
-            arg = cur.fetchall()
-            return max(arg[0])
+        try:
+            with connection.cursor() as cur:
+                cur.execute(""" SELECT id_name FROM {0} ORDER BY id_name DESC;"""
+                            .format(f"{str(self.user) + '_' + str(self.id)}",))
+                arg = cur.fetchall()
+                logger.debug(f'last project is {arg}')
+                return max(arg[0])
+        except:
+            connection.close()
 
     def insert_details(self):
         connection = psycopg2.connect(URI, sslmode="require")
@@ -289,14 +292,18 @@ class List_work():
         except:
             connection.close()
 
-        time_st = re.sub(r'\+00:00', '', f'{arg[3]}')
-        time_end = re.sub(r'\+00:00', '', f'{arg[4]}')
+        time_st = re.split("\:\d{2}\.\d{6}\+\d{2}:\d{2}|\:\d{2}\+\d{2}\:\d{2}", f'{arg[3]}', maxsplit=1)
+        time_end = re.split("\:\d{2}\.\d{6}\+\d{2}:\d{2}|\:\d{2}\+\d{2}\:\d{2}", f'{arg[4]}', maxsplit=1)
+        duration = re.split("\:\d{2}\.\d{5}", f'{arg[5]}', maxsplit=1)
+        logger.info(f'{arg[3]}\n'
+                    f'{arg[4]}\n'
+                    f'{arg[3]}\n')
         return f"Data: {arg[0]}\n" \
                f"Project: {arg[1]}\n" \
                f"Tasks: {arg[2]}\n" \
-               f"Time start: {time_st}\n" \
-               f"Time end: {time_end}\n" \
-               f"Duration: {arg[5]}\n" \
+               f"Time start: {time_st[0]}\n" \
+               f"Time end: {time_end[0]}\n" \
+               f"Duration: {duration[0]}\n" \
                f"Km: {arg[7]}\n" \
                f"other_ex: {arg[8]}\n" \
                f"Ex: {arg[9]}\n" \
@@ -320,12 +327,15 @@ class List_work():
 
     def lust_project(self):
         connection = psycopg2.connect(URI, sslmode="require")
-
-        with connection.cursor() as cur:
-            cur.execute(""" SELECT id_name FROM {0};""".format(f"{str(self.user) + '_' + str(self.id)}",))
-
-            arg = cur.fetchall()
-            return max(arg[0])
+        try:
+            with connection.cursor() as cur:
+                cur.execute(""" SELECT id_name FROM {0} ORDER BY id_name DESC;"""
+                            .format(f"{str(self.user) + '_' + str(self.id)}",))
+                arg = cur.fetchall()
+                logger.debug(f'last project is {arg}')
+                return max(arg[0])
+        except:
+            connection.close()
 
     def dell_all_date (self,):
         connection = psycopg2.connect(URI, sslmode="require")
@@ -508,7 +518,8 @@ class Out_pdf_smal():
                                         desc_ex, km, km * arg_km as km_cost ,  
                                         other_ex, ex,                             
                             (((to_number(to_char((time_end - time_start), 'ssss'  ), '99999') * costs) / arg_time ) + ex ) as price
-                                        from {0}; """.format(f"{str(self.user) + '_' + str(self.id)}", )
+                                        from {0}
+                                        ORDER BY date_st; """.format(f"{str(self.user) + '_' + str(self.id)}", )
                             )
 
                 Out_pdf_smal.arg = iter(cur.fetchall())
