@@ -62,7 +62,6 @@ class SQL_worker():
                                     f"{'daytime_user' + '_' + str(self.id)}",
                                     f'{str(self.id)}'))
 
-                logger.info("Добавил время в основную таблицу, создал в ней строку")
                 connection.commit()
 
         except:
@@ -142,7 +141,6 @@ class Getdate():
             with connection.cursor() as cur:
                 cur.execute(""" UPDATE {0} SET date_time_end = CURRENT_TIMESTAMP+'02:00';"""
                             .format(f"{'daytime_user' + '_' + str(self.id)}", ))
-                logger.info("Добавид время оканчания")
                 connection.commit()
         except:
             connection.close()
@@ -165,8 +163,6 @@ class Insert():
                             .format(f"{str(self.user) + '_' + str(self.id)}",
                                     f"{'daytime_user' + '_' + str(self.id)}",
                                     ))
-
-                logger.info("Добавид в основную табл данные с временной")
                 connection.commit()
 
         except:
@@ -193,8 +189,6 @@ class Insert():
                                 .format(f"{str(self.user) + '_' + str(self.id)}",
                                         f"{'daytime_user' + '_' + str(self.id)}",
                                         ))
-
-                    logger.info("Добавид в основную табл данные '1' ")
                     connection.commit()
 
             except:
@@ -224,18 +218,25 @@ class Details():
         id_project = self.lust_project()
         try:
             with connection.cursor() as cur:
-                cur.execute(""" UPDATE {0}
-                                SET project='{1}', tasks='{2}', km={3} other_ex={4},
-                                WHERE id_name={5};"""
-                            .format(f"{str(self.user) + '_' + str(self.id)}",
-                                    f"{self.project_name}",
-                                    f"{self.tasks}",
-                                    f"{self.km}",
-                                    f"{self.expenses}",
-                                    f"{int(id_project)}"))
-                connection.commit()
+                    cur.execute(""" UPDATE {0}
+                                    SET project='{1}', 
+                                    tasks='{2}',
+                                    km={3},
+                                    other_ex={4}
+                                    WHERE id_name={5};"""
+                                .format(f"{str(self.user) + '_' + str(self.id)}",
+                                        f"{self.project_name}",
+                                        f"{self.tasks}",
+                                        f"{self.km}",
+                                        f"{self.expenses}",
+                                        f"{int(id_project)}",
+                                        )
+                                )
+                    connection.commit()
         except:
             connection.close()
+
+
 
 class List_work():
 
@@ -247,7 +248,7 @@ class List_work():
         self.id = id
 
     def out_list(self):
-        logger.info("ime in out_list")
+
         connection = psycopg2.connect(URI, sslmode="require")
         try:
             with connection.cursor() as cur:
@@ -255,11 +256,10 @@ class List_work():
                                 FROM {0} ;"""
                             .format(f"{str(self.user) + '_' + str(self.id)}",))
                 arg = cur.fetchall()
-                logger.info(arg)
+
                 text = "List projects:"
                 for i in arg:
                     text += f"\n{i[0]} /i{i[0]}  {i[1]}   /edit{i[0]} /dell{i[0]}"
-                logger.info(text)
                 if text == "List projects:":
                     return f"Sorry {str(self.user)} you have no added dates."
                 else:
@@ -291,7 +291,6 @@ class List_work():
 
         time_st = re.sub(r'\+00:00', '', f'{arg[3]}')
         time_end = re.sub(r'\+00:00', '', f'{arg[4]}')
-        logger.info(arg[0])
         return f"Data: {arg[0]}\n" \
                f"Project: {arg[1]}\n" \
                f"Tasks: {arg[2]}\n" \
@@ -306,7 +305,6 @@ class List_work():
     def dell (self, id_name):
         connection = psycopg2.connect(URI, sslmode="require")
         try:
-            logger.info(id_name)
             with connection.cursor() as cur:
                 cur.execute(""" DELETE FROM {0}
                                 where id_name = {1};"""
@@ -406,16 +404,13 @@ class Out_pdf():
                 Out_pdf.arg = iter(cur.fetchall())
         except:
             connection.close()
-            logger.debug("in argument pdf")
 
     def update(self):
         try:
             self.time_arg = next(self.arg)
-            logger.debug("True")
             return True
 
         except StopIteration:
-            logger.debug("False")
             return False
 
     def date(self):
@@ -476,7 +471,6 @@ class Out_pdf():
                                  self.ex(),
                                  self.price(),
                                  ])
-            logger.info(f"Eteration\n" )
             self.creat()
 
         else:
@@ -484,7 +478,6 @@ class Out_pdf():
 
     def out(self):
         self.creat()
-        logger.info(self.add_arg)
         return self.add_arg
 
 class Out_pdf_smal():
@@ -521,16 +514,13 @@ class Out_pdf_smal():
                 Out_pdf_smal.arg = iter(cur.fetchall())
         except:
             connection.close()
-            logger.debug("in argument pdf")
 
     def update(self):
         try:
             self.time_arg = next(self.arg)
-            logger.debug("True")
             return True
 
         except StopIteration:
-            logger.debug("False")
             return False
 
     def date(self):

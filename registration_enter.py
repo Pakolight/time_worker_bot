@@ -120,7 +120,6 @@ def new_user_pass(call):
 
 def cost_hour(call):
     result = re.sub(r',|\.', '.', f'{call.text}')
-    logger.debug(result)
 
     Arg.data_table += [result]
 
@@ -158,7 +157,6 @@ def sing_in(self):
     key.row(btn_1, )
 
     mail, id, user_name, user_pass, cost_hour, cost_km = Arg.data_table
-    logger.debug(f"Repack done{mail, id, user_name, user_pass, cost_hour, cost_km}", )
     sql = SQL_worker(mail, id, user_name, user_pass, cost_hour, cost_km)
     sql.enter_start_data()
     Arg.dell = bot.send_message(self.chat.id, 'Done IN', reply_markup=key)
@@ -238,7 +236,7 @@ def end_day(self):
 # Принемает данные проекта, заносит их во временную переменную
 @bot.message_handler(func=lambda msg: msg.text in {'Enter details', 'Enter again'})
 def details(self):
-
+    Arg.data_table = None
     call = bot.send_message(self.chat.id, "Enter project name")
     bot.register_next_step_handler(call, project_name)
 
@@ -256,7 +254,6 @@ def project_name(call):
 
 def tasks(call):
     Arg.data_table += [call.text]
-
     call = bot.send_message(call.chat.id, "Your distance for calculation of transport costs in km")
     bot.register_next_step_handler(call, km_total)
 
@@ -264,10 +261,8 @@ def tasks(call):
 
 def km_total(call):
     Arg.data_table += [call.text]
-
     call = bot.send_message(call.chat.id, "Enter your expenses")
     bot.register_next_step_handler(call, expenses)
-
     Arg.dell = call
 
 
@@ -300,6 +295,7 @@ def save_dates_project(self):
     save_dates_project.row(btn_3)
 
     id, project_name, tasks, km, expenses = Arg.data_table
+    logger.debug(self.from_user.first_name, id, project_name, tasks, km, expenses)
     data = Details(self.from_user.first_name, id, project_name, tasks, km, expenses)
     data.insert_details()
     bot.send_message(self.chat.id, "I save it", reply_markup=save_dates_project)
@@ -365,7 +361,6 @@ def edit_position(self):
 
 def edit_t(self):
     result = re.sub(r'-|\.', '-', f'{self.text}') + "+02"
-    logger.debug(result)
     data = Edit(self.from_user.first_name, self.from_user.id, Arg.data_table[1], Arg.data_call[1], result)
     mess = data.edit_row()
 
