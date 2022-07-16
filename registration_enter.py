@@ -435,13 +435,19 @@ def edit_menue(self):
     Output_table = KB(resize_keyboard=True, row_width=1)
     btn_1 = RB(text='Big size')
     btn_2 = RB(text='Small size')
+    btn_5 = RB(text='My paycheck')
     btn_3 = RB(text='New reporting period')
     btn_4 = RB(text='Back')
-    Output_table.row(btn_1, btn_2, btn_3)
-    Output_table.row(btn_4)
+    Output_table.row(btn_1, btn_2, btn_3,)
+    Output_table.row(btn_5,)
+    Output_table.row(btn_4,)
     bot.send_message(self.chat.id, "Choose what to do.", reply_markup=Output_table, )
 
-
+@bot.message_handler(func=lambda msg: msg.text in 'My paycheck')
+def my_paycheck(self):
+    arg = List_work(self.from_user.first_name, self.from_user.id, )
+    info = arg.my_paycheck()
+    bot.send_message(self.chat.id, f'{info}')
 
 @bot.message_handler(func=lambda msg: msg.text in 'Big size')
 def pdf(self):

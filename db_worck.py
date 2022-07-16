@@ -25,19 +25,21 @@ class SQL_worker():
         with connection.cursor() as cur:
                 # создает табличку пользователя
                 cur.execute("""CREATE TABLE IF NOT EXISTS {0}(id_name serial NOT NULL,
-                                                                                       date_st date NOT NULL DEFAULT CURRENT_DATE,
-                                                                                       project text NOT NULL DEFAULT CURRENT_DATE,
-                                                                                       tasks text,
-                                                                                       desc_ex text,
-                                                                                       other_ex numeric DEFAULT 0,
-                                                                                       km numeric DEFAULT 0,
-                                                                                       ex numeric DEFAULT 0,
-                                                                                       time_start timestamptz NOT NULL,
-                                                                                       time_end timestamptz,
-                                                                                       costs numeric NOT NULL DEFAULT {1},
-                                                                                       arg_time numeric NOT NULL DEFAULT 3600,
-                                                                                       arg_km numeric NOT NULL DEFAULT {2},
-                                                                                       PRIMARY KEY (id_name) );"""
+                                                                            date_st date NOT NULL DEFAULT CURRENT_DATE,
+                                                                            project text NOT NULL DEFAULT CURRENT_DATE,
+                                                                            tasks text,
+                                                                            desc_ex text,
+                                                                            other_ex numeric DEFAULT 0,
+                                                                            km numeric DEFAULT 0,
+                                                                            ex numeric DEFAULT 0,
+                                                                            price numeric DEFAULT 0,
+                                                                            dur interval,
+                                                                            time_start timestamptz NOT NULL,
+                                                                            time_end timestamptz,
+                                                                            costs numeric NOT NULL DEFAULT {1},
+                                                                            arg_time numeric NOT NULL DEFAULT 3600,
+                                                                            arg_km numeric NOT NULL DEFAULT {2},
+                                                                            PRIMARY KEY (id_name) );"""
                             .format(f"{str(self.user) + '_' + str(self.id)}", f"{str(self.cost)}", f"{str(self.km)}")
                             )
 
@@ -250,6 +252,33 @@ class List_work():
         self.user = user
         self.id = id
 
+    def my_paycheck(self):
+
+        connection = psycopg2.connect(URI, sslmode="require")
+        try:
+            with connection.cursor() as cur:
+                cur.execute(""" UPDATE {0}
+                                SET ex = (km * arg_km) + other_ex;
+
+                                UPDATE {0}
+                                SET price = ((extract (EPOCH FROM (time_end - time_start)) * costs) / arg_time ) + ex ;
+
+                                SELECT SUM(price) AS my_paycheck
+                                FROM {0};"""
+                                .format(f"{str(self.user) + '_' + str(self.id)}", ))
+                arg = cur.fetchall()
+
+                text = "My paycheck is "
+                for i in arg:
+                    text += f"\n{round(float(i[0]),1)}"
+                if text == "My paycheck is ":
+                    return f"Sorry {str(self.user)} you have no added dates."
+                else:
+                    return text
+        except:
+            return f"Sorry {str(self.user)} you have no added dates."
+
+
     def out_list(self):
 
         connection = psycopg2.connect(URI, sslmode="require")
@@ -285,7 +314,7 @@ class List_work():
             with connection.cursor() as cur:
                 cur.execute(""" SELECT date_st, project, tasks, time_start, time_end, 
                                 time_end - time_start as duration, desc_ex, km, km * arg_km as km_cost , other_ex, ex, 
-                                (((to_number(to_char((time_end - time_start), 'ssss'  ), '99999') * costs) / arg_time ) + ex ) 
+                                (((extract (epoch from (time_end - time_start)) * costs) / arg_time ) + ex )  
                                 AS price from {0} WHERE id_name={1};"""
                             .format(f"{str(self.user) + '_' + str(self.id)}", id_name[1]))
                 arg = cur.fetchone()
@@ -295,9 +324,6 @@ class List_work():
         time_st = re.split("\:\d{2}\.\d{6}\+\d{2}:\d{2}|\:\d{2}\+\d{2}\:\d{2}", f'{arg[3]}', maxsplit=1)
         time_end = re.split("\:\d{2}\.\d{6}\+\d{2}:\d{2}|\:\d{2}\+\d{2}\:\d{2}", f'{arg[4]}', maxsplit=1)
         duration = re.split("\:\d{2}\.\d{5}", f'{arg[5]}', maxsplit=1)
-        logger.info(f'{arg[3]}\n'
-                    f'{arg[4]}\n'
-                    f'{arg[3]}\n')
         return f"Data: {arg[0]}\n" \
                f"Project: {arg[1]}\n" \
                f"Tasks: {arg[2]}\n" \
@@ -517,7 +543,7 @@ class Out_pdf_smal():
                                         time_end,time_end - time_start as duration, 
                                         desc_ex, km, km * arg_km as km_cost ,  
                                         other_ex, ex,                             
-                            (((to_number(to_char((time_end - time_start), 'ssss'  ), '99999') * costs) / arg_time ) + ex ) as price
+                                (((extract (epoch from (time_end - time_start)) * costs) / arg_time ) + ex ) as price
                                         from {0}
                                         ORDER BY date_st; """.format(f"{str(self.user) + '_' + str(self.id)}", )
                             )

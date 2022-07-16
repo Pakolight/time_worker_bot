@@ -60,18 +60,34 @@ CREATE TABLE IF NOT EXISTS timelist(id_name serial NOT NULL,
 --TRUNCATE TABLE timelist;
 
 --выводит итоговую таблицу---
-update timelist
-set ex = (km * arg_km) + other_ex;
+update kostiantyn_580359043
+set desc_ex = (km * arg_km) + other_ex;
 
-SELECT date_st, project, tasks, time_start, time_end, time_end - time_start as duration, desc_ex, km, km * arg_km as km_cost ,  other_ex, ex, (((to_number(to_char((time_end - time_start), 'ssss'  ), '99999') * costs) / arg_time ) + ex ) as price
-from timelist;
+SELECT date_st, project, tasks, time_start, time_end,
+time_end - time_start as duration, desc_ex, km, km * arg_km as km_cost ,
+other_ex, ex, (((extract (epoch from (time_end - time_start)) * costs) / arg_time ) + ex ) as price
+from kostiantyn_580359043;
 
 
 --select *
 --from timelist;
 
+---Выводит интервал между двумя днями в секундах---
+update kostiantyn_580359043
+set price = ((extract (epoch from (time_end - time_start)) * costs) / arg_time ) + ex ;
 
 
 -------РАБОЧАЯ---
 --SELECT (to_number(to_char((time_end - time_start), 'ssss'  ), '99999') * costs) / arg_tf as
 --from test2
+
+---Подсчитывает общую стоимость колонки с зп за день, выводит итоговую зп--
+
+update kostiantyn_580359043
+set ex = (km * arg_km) + other_ex;
+
+update kostiantyn_580359043
+set price = ((extract (epoch from (time_end - time_start)) * costs) / arg_time ) + ex ;
+
+SELECT SUM(price) as my_paycheck
+from kostiantyn_580359043;
