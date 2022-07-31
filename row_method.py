@@ -76,11 +76,9 @@ class Table_data:
                                  self.ex(),
                                  self.price(),
                                  ])
-            logger.info(f"Eteration\n" )
             self.creat()
 
         else:
-            logger.info(f"Done\n{self.add_arg}")
             return(self.add_arg)
 
     def out(self):

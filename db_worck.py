@@ -495,7 +495,7 @@ class Out_pdf():
     def creat(self):
         if self.update():
             self.add_arg.append([self.date(),
-                                 self.date(),
+                                 self.project(),
                                  self.tasks(),
                                  self.time_start(),
                                  self.time_end(),
@@ -604,7 +604,7 @@ class Out_pdf_smal():
     def creat(self):
         if self.update():
             self.add_arg.append([self.date(),
-                                 self.date(),
+                                 self.project(),
                                  self.tasks(),
                                  self.time_start(),
                                  self.time_end(),
