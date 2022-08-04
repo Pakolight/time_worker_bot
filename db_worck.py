@@ -285,7 +285,7 @@ class List_work():
         try:
             with connection.cursor() as cur:
                 cur.execute(""" SELECT id_name, project 
-                                FROM {0} ;"""
+                                FROM {0} ORDER BY date_st;"""
                             .format(f"{str(self.user) + '_' + str(self.id)}",))
                 arg = cur.fetchall()
 
@@ -434,7 +434,7 @@ class Out_pdf():
                                         desc_ex, km, km * arg_km as km_cost ,  
                                         other_ex, ex,                             
                             (((to_number(to_char((time_end - time_start), 'ssss'  ), '99999') * costs) / arg_time ) + ex ) as price
-                                        from {0}; """.format(f"{str(self.user) + '_' + str(self.id)}", )
+                                        from {0} ORDER BY date_st; """.format(f"{str(self.user) + '_' + str(self.id)}", )
                             )
 
                 Out_pdf.arg = iter(cur.fetchall())

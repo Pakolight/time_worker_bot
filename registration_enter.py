@@ -361,7 +361,8 @@ def edit_position(self):
 
 
 def edit_t(self):
-    result = re.sub(r'-|\.', '-', f'{self.text}') + "+02"
+    result = re.sub(r'-|\.', '-', f'{self.text}')
+    logger.debug(result)
     data = Edit(self.from_user.first_name, self.from_user.id, Arg.data_table[1], Arg.data_call[1], result)
     mess = data.edit_row()
 
